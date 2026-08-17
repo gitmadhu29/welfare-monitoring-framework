@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #1E2761; color: white; }
+        .stats { display: flex; gap: 30px; margin-bottom: 20px; }
+        .stat-box { padding: 15px 25px; background: #f4f6fb; border-radius: 8px; }
+        .flagged-row { background: #ffe6e6; }
+    </style>
+</head>
+<body>
+    <h2>Welfare Scheme Admin Dashboard</h2>
+    <div class="stats">
+        <div class="stat-box"><strong>{{ total }}</strong><br>Total Applications</div>
+        <div class="stat-box"><strong>{{ approved }}</strong><br>Approved</div>
+        <div class="stat-box"><strong>{{ flagged }}</strong><br>Flagged (Possible Duplicates)</div>
+    </div>
+
+    <table>
+        <tr>
+            <th>ID</th><th>Name</th><th>Scheme</th><th>Status</th>
+        </tr>
+        {% for b in beneficiaries %}
+        <tr class="{{ 'flagged-row' if b.status.startswith('Flagged') else '' }}">
+            <td>{{ b.id }}</td>
+            <td>{{ b.name }}</td>
+            <td>{{ b.scheme }}</td>
+            <td>{{ b.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

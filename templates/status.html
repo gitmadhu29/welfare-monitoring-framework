@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Application Status</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 60px auto; }
+        .approved { color: green; }
+        .flagged { color: red; }
+    </style>
+</head>
+<body>
+    <h2>Application Status</h2>
+    <p><strong>Name:</strong> {{ beneficiary.name }}</p>
+    <p><strong>Scheme:</strong> {{ beneficiary.scheme }}</p>
+    <p><strong>Status:</strong>
+        <span class="{{ 'flagged' if is_duplicate else 'approved' }}">
+            {{ beneficiary.status }}
+        </span>
+    </p>
+    {% if is_duplicate %}
+        <p>This application was flagged as a possible duplicate and requires admin review.</p>
+    {% endif %}
+    <a href="/register">Submit another application</a>
+</body>
+</html>
