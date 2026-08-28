@@ -1,265 +1,128 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
-    <title>Admin Dashboard</title>
-
+    <meta charset="UTF-8">
+    <title>Officer Dashboard</title>
     <style>
-
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        h2 {
-            color: #1E2761;
-        }
-
-        .stats {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 20px;
-        }
-
-        .stat-box {
-            padding: 15px 25px;
-            background: #f4f6fb;
-            border-radius: 8px;
-            min-width: 150px;
-        }
-
-        .stat-box strong {
-            font-size: 24px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th,
-        td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background: #1E2761;
-            color: white;
-        }
-
-        .flagged-row {
-            background: #ffe6e6;
-        }
-
-        .pending-row {
-            background: #fff8dc;
-        }
-
-        .approved-row {
-            background: #e8f5e9;
-        }
-
-        button {
-            background: #1E2761;
-            color: white;
-            border: none;
-            padding: 7px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            opacity: 0.85;
-        }
-
-        .approved-text {
-            color: green;
-            font-weight: bold;
-        }
-
-        .flagged-text {
-            color: red;
-            font-weight: bold;
-        }
-
-        .pending-text {
-            color: #b8860b;
-            font-weight: bold;
-        }
-
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        nav { display: flex; justify-content: space-between; align-items: center; background: #333; color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; }
+        nav a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #007bff; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .btn-approve { display: inline-block; background-color: #28a745; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px; font-size: 12px; }
+        .btn-reject { display: inline-block; background-color: #dc3545; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-size: 12px; }
+        .status-Pending { color: orange; font-weight: bold; }
+        .status-Approved { color: green; font-weight: bold; }
+        .status-Rejected { color: red; font-weight: bold; }
+        .status-Flagged { color: darkred; font-weight: bold; }
     </style>
-
 </head>
-
-
 <body>
 
-    <h2>Welfare Scheme Admin Dashboard</h2>
-
-
-    <div class="stats">
-
-        <div class="stat-box">
-
-            <strong>{{ total }}</strong>
-
-            <br>
-
-            Total Applications
-
+<div class="container">
+    <nav>
+        <h2>{{ officer_department }} Department Dashboard</h2>
+        <div>
+            <a href="/fraud_logs" style="background: #dc3545; margin-right: 10px;">⚠️ View Fraud Logs</a>
+            <a href="/logout" style="background: #6c757d;">Logout</a>
         </div>
+    </nav>
 
-
-        <div class="stat-box">
-
-            <strong>{{ approved }}</strong>
-
-            <br>
-
-            Approved
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <strong>{{ flagged }}</strong>
-
-            <br>
-
-            Flagged (Possible Duplicates)
-
-        </div>
-
-    </div>
-
-
+    {% if scholarships %}
+    <h3>Scholarship Applications</h3>
     <table>
-
+        <tr><th>App ID</th><th>Student Name</th><th>Course</th><th>Income (₹)</th><th>Status</th><th>Action</th></tr>
+        {% for app in scholarships %}
         <tr>
-
-            <th>ID</th>
-
-            <th>Name</th>
-
-            <th>Scheme</th>
-
-            <th>Status</th>
-
-            <th>Action</th>
-
+            <td>{{ app.application_id }}</td>
+            <td>{{ app.beneficiary.full_name }}</td>
+            <td>{{ app.course_degree }}</td>
+            <td>{{ app.annual_family_income }}</td>
+            <td class="status-{{ app.status }}">{{ app.status }}</td>
+            <td>
+                <a href="#" onclick="document.getElementById('sch-{{app.id}}').submit()" class="btn-approve">Approve</a>
+                <form id="sch-{{app.id}}" action="/update_status/scholarship/{{app.id}}/Approved" method="POST" style="display:none;"></form>
+                
+                <a href="#" onclick="document.getElementById('sch-r-{{app.id}}').submit()" class="btn-reject">Reject</a>
+                <form id="sch-r-{{app.id}}" action="/update_status/scholarship/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
+            </td>
         </tr>
-
-
-        {% for b in beneficiaries %}
-
-        <tr
-
-            {% if b.status.startswith('Flagged') %}
-
-                class="flagged-row"
-
-            {% elif b.status == 'Pending' %}
-
-                class="pending-row"
-
-            {% elif b.status == 'Approved' %}
-
-                class="approved-row"
-
-            {% endif %}
-
-        >
-
-            <td>
-                {{ b.id }}
-            </td>
-
-
-            <td>
-                {{ b.name }}
-            </td>
-
-
-            <td>
-                {{ b.scheme }}
-            </td>
-
-
-            <td>
-
-                {% if b.status.startswith('Flagged') %}
-
-                    <span class="flagged-text">
-                        {{ b.status }}
-                    </span>
-
-                {% elif b.status == 'Pending' %}
-
-                    <span class="pending-text">
-                        {{ b.status }}
-                    </span>
-
-                {% elif b.status == 'Approved' %}
-
-                    <span class="approved-text">
-                        {{ b.status }}
-                    </span>
-
-                {% else %}
-
-                    {{ b.status }}
-
-                {% endif %}
-
-            </td>
-
-
-            <td>
-
-                {% if b.status == 'Pending' %}
-
-                    <form
-                        action="{{ url_for('approve_beneficiary', beneficiary_id=b.id) }}"
-                        method="POST"
-                    >
-
-                        <button type="submit">
-                            Approve
-                        </button>
-
-                    </form>
-
-
-                {% elif b.status == 'Approved' %}
-
-                    <span class="approved-text">
-                        Approved
-                    </span>
-
-
-                {% elif b.status.startswith('Flagged') %}
-
-                    <span class="flagged-text">
-                        Review Required
-                    </span>
-
-                {% endif %}
-
-            </td>
-
-        </tr>
-
         {% endfor %}
-
     </table>
+    {% endif %}
+
+    {% if pensions %}
+    <h3>Pension Applications</h3>
+    <table>
+        <tr><th>App ID</th><th>Senior Citizen</th><th>Employer</th><th>Status</th><th>Action</th></tr>
+        {% for app in pensions %}
+        <tr>
+            <td>{{ app.application_id }}</td>
+            <td>{{ app.beneficiary.full_name }}</td>
+            <td>{{ app.previous_employer_details }}</td>
+            <td class="status-{{ app.status }}">{{ app.status }}</td>
+            <td>
+                <a href="#" onclick="document.getElementById('pen-{{app.id}}').submit()" class="btn-approve">Approve</a>
+                <form id="pen-{{app.id}}" action="/update_status/pension/{{app.id}}/Approved" method="POST" style="display:none;"></form>
+                
+                <a href="#" onclick="document.getElementById('pen-r-{{app.id}}').submit()" class="btn-reject">Reject</a>
+                <form id="pen-r-{{app.id}}" action="/update_status/pension/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    {% if rations %}
+    <h3>Ration Applications</h3>
+    <table>
+        <tr><th>App ID</th><th>Card Holder</th><th>Card Type</th><th>Family Members</th><th>Status</th><th>Action</th></tr>
+        {% for app in rations %}
+        <tr>
+            <td>{{ app.application_id }}</td>
+            <td>{{ app.beneficiary.full_name }}</td>
+            <td>{{ app.ration_card_type }}</td>
+            <td>{{ app.total_family_members }}</td>
+            <td class="status-{{ app.status }}">{{ app.status }}</td>
+            <td>
+                <a href="#" onclick="document.getElementById('rat-{{app.id}}').submit()" class="btn-approve">Approve</a>
+                <form id="rat-{{app.id}}" action="/update_status/ration/{{app.id}}/Approved" method="POST" style="display:none;"></form>
+                
+                <a href="#" onclick="document.getElementById('rat-r-{{app.id}}').submit()" class="btn-reject">Reject</a>
+                <form id="rat-r-{{app.id}}" action="/update_status/ration/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    {% if subsidies %}
+    <h3>Subsidy Applications</h3>
+    <table>
+        <tr><th>App ID</th><th>Consumer</th><th>Subsidy Type</th><th>Income (₹)</th><th>Status</th><th>Action</th></tr>
+        {% for app in subsidies %}
+        <tr>
+            <td>{{ app.application_id }}</td>
+            <td>{{ app.beneficiary.full_name }}</td>
+            <td>{{ app.subsidy_type }}</td>
+            <td>{{ app.annual_income }}</td>
+            <td class="status-{{ app.status }}">{{ app.status }}</td>
+            <td>
+                <a href="#" onclick="document.getElementById('sub-{{app.id}}').submit()" class="btn-approve">Approve</a>
+                <form id="sub-{{app.id}}" action="/update_status/subsidy/{{app.id}}/Approved" method="POST" style="display:none;"></form>
+                
+                <a href="#" onclick="document.getElementById('sub-r-{{app.id}}').submit()" class="btn-reject">Reject</a>
+                <form id="sub-r-{{app.id}}" action="/update_status/subsidy/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+</div>
 
 </body>
-
 </html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welfare Schemes Portal</title>
+    <style>
+        body { font-family: Arial; background: #f4f7f6; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-width: 1000px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+        .card h3 { color: #007bff; margin-top: 0; }
+        .card p { font-size: 14px; color: #666; height: 40px; }
+        .btn-apply { display: inline-block; text-decoration: none; background: #28a745; color: white; padding: 10px 20px; border-radius: 4px; margin-top: 10px; }
+        .nav { text-align: right; margin-bottom: 20px; }
+        .nav a { margin-left: 15px; text-decoration: none; color: #333; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation (Scenario 1) -->
+    <div class="nav">
+        {% if session['citizen_id'] %}
+            <a href="/citizen_dashboard">My Dashboard</a>
+            <a href="/logout" style="color: red;">Logout</a>
+        {% else %}
+            <a href="/citizen_login">Citizen Login</a>
+            <a href="/login">Officer Login</a>
+        {% endif %}
+    </div>
+
+    <div class="header">
+        <h1>Available Welfare Schemes</h1>
+        <p>Select a scheme below to apply</p>
+    </div>
+
+    <!-- Scheme Cards (Scenario 2) -->
+    <div class="grid">
+        {% for s in schemes %}
+        <div class="card">
+            <h3>{{ s.name }}</h3>
+            <p>{{ s.description }}</p>
+            <!-- This passes the scheme_id to the URL -->
+            <a href="/citizen_login?scheme_id={{ s.id }}" class="btn-apply">Apply Now</a>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

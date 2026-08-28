@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fraud Logs</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        nav { display: flex; justify-content: space-between; align-items: center; background: #333; color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; }
+        nav a { color: white; text-decoration: none; margin-left: 15px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #dc3545; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav>
+        <h2>⚠️ Fraud Detection Logs</h2>
+        <div>
+            <a href="/dashboard">Back to Dashboard</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <table>
+        <tr>
+            <th>Detected At</th>
+            <th>Aadhaar Number</th>
+            <th>Application ID</th>
+            <th>Fraud Reason</th>
+            <th>Severity</th>
+        </tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ log.aadhaar_number }}</td>
+            <td>{{ log.application_id }}</td>
+            <td style="color: red; font-weight: bold;">{{ log.reason }}</td>
+            <td>{{ log.severity }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" style="text-align: center;">No fraud detected yet. System is clean!</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+</body>
+</html>

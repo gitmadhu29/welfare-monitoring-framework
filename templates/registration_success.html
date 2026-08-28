@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration Successful</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; width: 400px; }
+        h2 { color: #28a745; margin-bottom: 10px; }
+        p { color: #555; }
+        .id-box { 
+            background: #f8f9fa; 
+            border: 2px dashed #007bff; 
+            padding: 15px; 
+            margin: 20px 0; 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #007bff; 
+            letter-spacing: 1px;
+            border-radius: 8px;
+        }
+        .btn { display: inline-block; text-decoration: none; padding: 10px 20px; border-radius: 4px; margin: 10px 5px; cursor: pointer; border: none; font-size: 16px; }
+        .btn-copy { background: #28a745; color: white; }
+        .btn-login { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>✅ Account Created Successfully!</h2>
+    <p>Please save your Login ID. You will need this (or your email) and your password to log in.</p>
+    
+    <div class="id-box" id="userIdText">{{ user_id }}</div>
+    
+    <button class="btn btn-copy" onclick="copyId()">📋 Copy ID</button>
+    <br>
+    <a href="/citizen_login" class="btn btn-login">Proceed to Login</a>
+</div>
+
+<script>
+    function copyId() {
+        const textToCopy = document.getElementById('userIdText').innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert("Copied: " + textToCopy);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
+</script>
+
+</body>
+</html>

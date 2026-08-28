@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apply for {{ scheme.name }}</title>
+    <style>
+        body { font-family: Arial; background: #f4f7f6; padding: 20px; }
+        .box { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 8px; }
+        h2 { color: #333; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .prefilled { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Application Form: {{ scheme.name }}</h2>
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div style="color: red; margin-bottom: 10px;">
+              {% for message in messages %}{{ message }}<br>{% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/apply/{{ scheme.id }}">
+            
+            <h3>Your Details</h3>
+            <input type="text" value="{{ user.full_name }}" class="prefilled" readonly>
+            <input type="text" value="Aadhaar: {{ user.aadhaar_number }}" class="prefilled" readonly>
+            
+            <input type="text" name="address" placeholder="Address" required>
+            <input type="text" name="state" placeholder="State" required>
+            <input type="text" name="district" placeholder="District" required>
+            <input type="number" name="annual_income" placeholder="Annual Income (₹)" required>
+            <input type="text" name="bank_account_number" placeholder="Bank Account Number" required>
+            <input type="text" name="ifsc_code" placeholder="IFSC Code" required>
+
+            <h3>Scheme Details</h3>
+            {% if scheme.name == "Post-Matric Scholarship" %}
+                <input type="text" name="student_id" placeholder="Student ID" required>
+                <input type="text" name="guardian_name" placeholder="Guardian Name" required>
+                <input type="text" name="institution_name" placeholder="Institution Name" required>
+                <input type="text" name="course_degree" placeholder="Course/Degree" required>
+                <input type="text" name="academic_year" placeholder="Academic Year (e.g., 2023-2024)" required>
+                <input type="number" step="0.01" name="marks" placeholder="Previous Year Marks (%)" required>
+                
+            {% elif "Pension" in scheme.name %}
+                <input type="text" name="pensioner_id" placeholder="Pensioner ID" required>
+                <input type="date" name="retirement_date" placeholder="Retirement Date">
+                <input type="text" name="previous_employer" placeholder="Previous Employer (or 'Unorganized Worker')">
+                <input type="text" name="spouse_name" placeholder="Spouse Name">
+                
+            {% elif "Food Security" in scheme.name %}
+                <input type="text" name="ration_card_number" placeholder="Ration Card Number" required>
+                <select name="ration_card_type" required>
+                    <option value="BPL">BPL</option>
+                    <option value="APL">APL</option>
+                    <option value="Antyodaya Anna Yojana">Antyodaya Anna Yojana</option>
+                </select>
+                <input type="number" name="family_members" placeholder="Total Family Members" required>
+                <input type="text" name="income_certificate" placeholder="Income Certificate No.">
+                
+            {% else %}
+                <select name="subsidy_type" required>
+                    <option value="LPG Cooking Gas">LPG Cooking Gas</option>
+                    <option value="Electricity">Electricity</option>
+                </select>
+                <input type="text" name="connection_number" placeholder="LPG / Electricity Consumer No." required>
+            {% endif %}
+
+            <button type="submit">Submit Application</button>
+        </form>
+    </div>
+</body>
+</html>

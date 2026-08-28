@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Citizen Login</title>
+    <style>
+        body { font-family: Arial; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { width: 350px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .flash { color: red; text-align: center; margin-bottom: 10px; font-size: 14px; }
+        .scheme-badge { background: #e9ecef; padding: 8px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Citizen Login</h2>
+        
+        {% if scheme %}
+        <div class="scheme-badge">Applying for: {{ scheme.name }}</div>
+        {% endif %}
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">
+              {% for message in messages %}{{ message }}<br>{% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/citizen_login">
+            {% if scheme %}
+            <input type="hidden" name="scheme_id" value="{{ scheme.id }}">
+            {% endif %}
+            
+            <input type="text" name="login_id" placeholder="Enter Email or User ID" required>
+            <input type="password" name="password" placeholder="Enter Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p style="font-size: 13px; text-align: center; margin-top: 15px;">New user? <a href="/citizen_register">Register here</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Citizen Dashboard</title>
+    <style>
+        body { font-family: Arial; background: #f4f7f6; margin: 0; padding: 20px; }
+        .box { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-top: 0; }
+        .info p { font-size: 16px; margin: 5px 0; }
+        .scheme-card { background: #eef6ff; border: 1px solid #b8daff; border-radius: 8px; padding: 20px; margin-top: 20px; text-align: center; }
+        .btn { display: inline-block; text-decoration: none; background: #28a745; color: white; padding: 12px 24px; border-radius: 4px; margin: 10px 5px; font-size: 16px; font-weight: bold; }
+        .btn:hover { background: #218838; }
+        .nav-links { margin-top: 30px; text-align: center; }
+        .nav-links a { color: #6c757d; text-decoration: none; margin: 0 10px; }
+        
+        /* Table for Application History */
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .history-table th, .history-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .history-table th { background-color: #f2f2f2; }
+        .status-Pending { color: orange; font-weight: bold; }
+        .status-Approved { color: green; font-weight: bold; }
+        .status-Rejected { color: red; font-weight: bold; }
+        .status-Flagged { color: darkred; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Welcome, {{ user.full_name }}!</h2>
+        
+        <div class="info">
+            <p><strong>User ID:</strong> {{ user.user_id }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Category:</strong> {{ user.category }}</p>
+        </div>
+
+        <div class="scheme-card">
+            <h3>Your Eligible Schemes</h3>
+            {% if schemes %}
+                {% for s in schemes %}
+                    <a href="/apply/{{ s.id }}" class="btn">Apply for {{ s.name }}</a>
+                {% endfor %}
+            {% else %}
+                <p>No schemes are mapped to your category yet.</p>
+            {% endif %}
+        </div>
+
+        <h3 style="margin-top: 30px;">Application History</h3>
+        <table class="history-table">
+            <tr>
+                <th>Application ID</th>
+                <th>Scheme Type</th>
+                <th>Status</th>
+            </tr>
+            {% for app in scholarships %}
+            <tr>
+                <td>{{ app.application_id }}</td>
+                <td>Scholarship</td>
+                <td class="status-{{ app.status }}">{{ app.status }}</td>
+            </tr>
+            {% endfor %}
+            {% for app in pensions %}
+            <tr>
+                <td>{{ app.application_id }}</td>
+                <td>Pension</td>
+                <td class="status-{{ app.status }}">{{ app.status }}</td>
+            </tr>
+            {% endfor %}
+            {% for app in rations %}
+            <tr>
+                <td>{{ app.application_id }}</td>
+                <td>Ration (PDS)</td>
+                <td class="status-{{ app.status }}">{{ app.status }}</td>
+            </tr>
+            {% endfor %}
+            {% for app in subsidies %}
+            <tr>
+                <td>{{ app.application_id }}</td>
+                <td>Subsidy</td>
+                <td class="status-{{ app.status }}">{{ app.status }}</td>
+            </tr>
+            {% endfor %}
+            {% if not scholarships and not pensions and not rations and not subsidies %}
+            <tr>
+                <td colspan="3" style="text-align: center;">You have not applied for any schemes yet.</td>
+            </tr>
+            {% endif %}
+        </table>
+
+        <div class="nav-links">
+            <a href="/">Home</a> | 
+            <a href="/logout" style="color: #dc3545;">Logout</a>
+        </div>
+    </div>
+</body>
+</html>
