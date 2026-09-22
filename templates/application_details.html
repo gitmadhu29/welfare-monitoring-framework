@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Application Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 0; }
+        h3 { color: #007bff; margin-bottom: 15px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-item { font-size: 15px; }
+        .info-item strong { color: #555; }
+        .actions { text-align: center; margin-top: 30px; }
+        .btn { display: inline-block; text-decoration: none; color: white; padding: 12px 30px; border-radius: 4px; font-size: 16px; border: none; cursor: pointer; margin: 0 10px; }
+        .btn-approve { background-color: #28a745; }
+        .btn-reject { background-color: #dc3545; }
+        .btn-back { background-color: #6c757d; }
+        .status-Pending { color: orange; font-weight: bold; }
+        .status-Approved { color: green; font-weight: bold; }
+        .status-Rejected { color: red; font-weight: bold; }
+        .status-Flagged { color: darkred; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2>Application Review: {{ scheme_name }}</h2>
+        <p><strong>Application ID:</strong> {{ app.application_id }} | <strong>Status:</strong> <span class="status-{{ app.status }}">{{ app.status }}</span></p>
+        
+        <div style="margin-top: 20px;">
+            <h3>Citizen Master Data</h3>
+            <div class="info-grid">
+                <div class="info-item"><strong>Name:</strong> {{ citizen.full_name }}</div>
+                <div class="info-item"><strong>User ID:</strong> {{ citizen.user_id }}</div>
+                <div class="info-item"><strong>Aadhaar:</strong> {{ citizen.aadhaar_number }}</div>
+                <div class="info-item"><strong>DOB:</strong> {{ citizen.date_of_birth.strftime('%Y-%m-%d') }}</div>
+                <div class="info-item"><strong>Category:</strong> {{ citizen.category }}</div>
+                <div class="info-item"><strong>Phone:</strong> {{ citizen.phone }}</div>
+                <div class="info-item"><strong>Email:</strong> {{ citizen.email }}</div>
+                <div class="info-item"><strong>Address:</strong> {{ citizen.address }}, {{ citizen.district }}, {{ citizen.state }}</div>
+                <div class="info-item"><strong>Annual Income:</strong> ₹{{ citizen.annual_income }}</div>
+                <div class="info-item"><strong>Bank A/C:</strong> {{ citizen.bank_account_number }} (IFSC: {{ citizen.ifsc_code }})</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Scheme Specific Details</h3>
+        <div class="info-grid">
+            {% if app_type == 'scholarship' %}
+                <div class="info-item"><strong>Student ID:</strong> {{ app.student_id }}</div>
+                <div class="info-item"><strong>Guardian:</strong> {{ app.guardian_name }}</div>
+                <div class="info-item"><strong>Institution:</strong> {{ app.institution_name }}</div>
+                <div class="info-item"><strong>Course:</strong> {{ app.course_degree }}</div>
+                <div class="info-item"><strong>Academic Year:</strong> {{ app.academic_year }}</div>
+                <div class="info-item"><strong>Marks (%):</strong> {{ app.previous_year_marks_percentage }}</div>
+                
+            {% elif app_type == 'pension' %}
+                <div class="info-item"><strong>Pensioner ID:</strong> {{ app.pensioner_id }}</div>
+                <div class="info-item"><strong>Retirement Date:</strong> {{ app.retirement_date.strftime('%Y-%m-%d') if app.retirement_date else 'N/A' }}</div>
+                <div class="info-item"><strong>Employer:</strong> {{ app.previous_employer_details }}</div>
+                <div class="info-item"><strong>Spouse Name:</strong> {{ app.spouse_name }}</div>
+                
+            {% elif app_type == 'ration' %}
+                <div class="info-item"><strong>Ration Card No:</strong> {{ app.ration_card_number }}</div>
+                <div class="info-item"><strong>Card Type:</strong> {{ app.ration_card_type }}</div>
+                <div class="info-item"><strong>Family Members:</strong> {{ app.total_family_members }}</div>
+                <div class="info-item"><strong>Income Cert No:</strong> {{ app.income_certificate_number }}</div>
+                <div class="info-item"><strong>FPS Shop ID:</strong> {{ app.assigned_fps_shop_id }}</div>
+                
+            {% elif app_type == 'subsidy' %}
+                <div class="info-item"><strong>Subsidy Type:</strong> {{ app.subsidy_type }}</div>
+                <div class="info-item"><strong>Connection No:</strong> {{ app.connection_number }}</div>
+                <div class="info-item"><strong>Linked Bank A/C:</strong> {{ app.linked_bank_account }}</div>
+                <div class="info-item"><strong>Income:</strong> ₹{{ app.annual_income }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="actions">
+        <a href="/dashboard" class="btn btn-back">Back to Dashboard</a>
+        
+        {% if app.status == 'Pending' or app.status == 'Flagged' %}
+            <form action="/update_status/{{ app_type }}/{{ app.id }}/Approved" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-approve">Approve Application</button>
+            </form>
+            <form action="/update_status/{{ app_type }}/{{ app.id }}/Rejected" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-reject">Reject Application</button>
+            </form>
+        {% else %}
+            <p style="color: #666; margin-top: 15px;">This application has already been processed.</p>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

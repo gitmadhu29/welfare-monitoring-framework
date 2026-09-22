@@ -1,9 +1,14 @@
 import random
+import csv
+import io
+from datetime import date, datetime
+from flask import Flask, render_template, request, redirect, url_for, flash, session, Response
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from models import (db, Beneficiary, Scheme, ScholarshipApplication, 
                     PensionApplication, RationApplication, SubsidyApplication, 
                     Officer, FraudLog)
@@ -12,6 +17,16 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///welfare.db'
 app.config['SECRET_KEY'] = 'super_secret_key_123'
 db.init_app(app)
+
+# ========================================================
+# AI MODEL IMPORT AND TRAINING
+# ========================================================
+from ml.fraud_detection import train_model
+import pandas as pd
+
+print("Loading AI Model...")
+AI_MODEL = train_model()
+# ========================================================
 
 SCHEME_CATEGORY_MAP = {
     "Post-Matric Scholarship":               "Student",
@@ -31,19 +46,16 @@ def _calc_age(dob: date) -> int:
 # ---------------- HOME PAGE ----------------
 @app.route('/')
 def index():
-    # If the user is already logged in, send them straight to their Dashboard!
     if 'citizen_id' in session:
         return redirect(url_for('citizen_dashboard'))
         
-    # If not logged in, show the public Home Page with all schemes
     schemes = Scheme.query.all()
     return render_template('index.html', schemes=schemes)
 
 # ========================================================
-# CITIZEN AUTHENTICATION ROUTES (Strict Category Mapping)
+# CITIZEN AUTHENTICATION ROUTES
 # ========================================================
 
-# ---------------- CITIZEN REGISTER ----------------
 @app.route('/citizen_register', methods=['GET', 'POST'])
 def citizen_register():
     schemes = Scheme.query.all()
@@ -102,20 +114,16 @@ def citizen_register():
         db.session.add(new_user)
         db.session.commit()
 
-        # Redirect to the success page to show the ID to copy
         return redirect(url_for('registration_success', user_id=user_id))
 
     return render_template('citizen_register.html', schemes=schemes)
 
-# ---------------- REGISTRATION SUCCESS ----------------
 @app.route('/registration_success/<user_id>')
 def registration_success(user_id):
     return render_template('registration_success.html', user_id=user_id)
 
-# ---------------- CITIZEN LOGIN ----------------
 @app.route('/citizen_login', methods=['GET', 'POST'])
 def citizen_login():
-    # Check if scheme_id was passed in the URL (Scenario 2)
     scheme_id = request.args.get('scheme_id') or request.form.get('scheme_id')
     scheme = Scheme.query.get(scheme_id) if scheme_id else None
     
@@ -128,14 +136,11 @@ def citizen_login():
         ).first()
 
         if user and check_password_hash(user.password_hash, password):
-            # SCENARIO 2 CHECK: Did they click a specific scheme?
             if scheme:
-                # Strict mapping check
                 if user.category != scheme.category:
                     flash(f"Access Denied! Your account is mapped to {user.category} schemes, but you selected {scheme.name}.")
                     return redirect(url_for('citizen_login', scheme_id=scheme_id))
             
-            # If they pass the check (or if it's Scenario 1), log them in and go to Dashboard
             session['citizen_id'] = user.id
             flash('Login successful!')
             return redirect(url_for('citizen_dashboard'))
@@ -143,6 +148,7 @@ def citizen_login():
             flash('Invalid login ID or password.')
 
     return render_template('citizen_login.html', scheme=scheme)
+
 @app.route('/citizen_dashboard')
 def citizen_dashboard():
     if 'citizen_id' not in session:
@@ -150,11 +156,8 @@ def citizen_dashboard():
         return redirect(url_for('citizen_login'))
 
     user = Beneficiary.query.get(session['citizen_id'])
-    
-    # Get ALL schemes that match the user's category (not just the first one)
     schemes = Scheme.query.filter_by(category=user.category).all()
     
-    # Fetch all applications this user has ever submitted
     scholarships = ScholarshipApplication.query.filter_by(beneficiary_id=user.id).all()
     pensions = PensionApplication.query.filter_by(beneficiary_id=user.id).all()
     rations = RationApplication.query.filter_by(beneficiary_id=user.id).all()
@@ -167,6 +170,7 @@ def citizen_dashboard():
                            pensions=pensions,
                            rations=rations,
                            subsidies=subsidies)
+
 # ---------------- APPLY FOR SCHEME ----------------
 @app.route('/apply/<int:scheme_id>', methods=['GET', 'POST'])
 def apply_scheme(scheme_id):
@@ -189,15 +193,42 @@ def apply_scheme(scheme_id):
         user.bank_account_number = request.form.get('bank_account_number', '').strip()
         user.ifsc_code = request.form.get('ifsc_code', '').strip()
         
+        # ========================================================
+        # AI FRAUD DETECTION ENGINE (Isolation Forest)
+        # ========================================================
         fraud_reasons = []
         current_status = "Pending"
+
+        cat_map = {"Student": 1, "Senior Citizen": 2, "BPL": 3, "General": 4}
+        age = _calc_age(user.date_of_birth)
+        
+        new_data = pd.DataFrame([{
+            "age": age,
+            "income": user.annual_income,
+            "category_code": cat_map.get(user.category, 0),
+            "has_bank_account": 1 if user.bank_account_number else 0
+        }])
+
+        if AI_MODEL:
+            prediction = AI_MODEL.predict(new_data)
+            if prediction[0] == -1:
+                fraud_reasons.append(f"AI Model flagged this as anomalous (Age: {age}, Income: {user.annual_income}, Cat: {user.category}).")
+
         if user.category in ["BPL", "General"] and user.annual_income > 300000:
             fraud_reasons.append(f"Income {user.annual_income} exceeds limit for {scheme.name}.")
+
         if fraud_reasons:
             current_status = "Flagged"
             flash("⚠️ FRAUD DETECTED! Application flagged for review.")
+        # ========================================================
 
-        app_id = _gen_app_id(scheme.name[0:3].upper())
+        # Generate the correct prefix based on the scheme name
+        if scheme.name == "Post-Matric Scholarship": prefix = "SCH"
+        elif "Pension" in scheme.name: prefix = "PEN"
+        elif "Food Security" in scheme.name: prefix = "RAT"
+        else: prefix = "SUB"
+        
+        app_id = _gen_app_id(prefix)
         
         if scheme.name == "Post-Matric Scholarship":
             application = ScholarshipApplication(
@@ -264,7 +295,7 @@ def login():
             session['officer_id'] = officer.id
             session['officer_name'] = officer.full_name
             session['role'] = officer.role
-            session['department'] = officer.department # <--- SAVES DEPARTMENT
+            session['department'] = officer.department
             flash('Logged in successfully!')
             return redirect(url_for('dashboard'))
         else:
@@ -272,20 +303,97 @@ def login():
             
     return render_template('login.html')
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Logged out.')
+    return redirect(url_for('index'))
+
 @app.route('/dashboard')
 def dashboard():
     if 'officer_id' not in session:
         flash('Please login first.')
         return redirect(url_for('login'))
     
-    # Get the department of the logged-in officer
     department = session.get('department')
     role = session.get('role')
     
-    # Default empty lists
+    # NEW: Get the search query from the URL (if they searched)
+    search_query = request.args.get('search', '').strip()
+    
     scholarships, pensions, rations, subsidies = [], [], [], []
 
-    # If Admin, fetch everything
+    # Base queries with a join to Beneficiary so we can search by name
+    sch_query = ScholarshipApplication.query.join(Beneficiary)
+    pen_query = PensionApplication.query.join(Beneficiary)
+    rat_query = RationApplication.query.join(Beneficiary)
+    sub_query = SubsidyApplication.query.join(Beneficiary)
+
+    # Apply search filter if the officer typed something
+    if search_query:
+        sch_query = sch_query.filter(
+            (ScholarshipApplication.application_id.ilike(f'%{search_query}%')) |
+            (Beneficiary.full_name.ilike(f'%{search_query}%'))
+        )
+        pen_query = pen_query.filter(
+            (PensionApplication.application_id.ilike(f'%{search_query}%')) |
+            (Beneficiary.full_name.ilike(f'%{search_query}%'))
+        )
+        rat_query = rat_query.filter(
+            (RationApplication.application_id.ilike(f'%{search_query}%')) |
+            (Beneficiary.full_name.ilike(f'%{search_query}%'))
+        )
+        sub_query = sub_query.filter(
+            (SubsidyApplication.application_id.ilike(f'%{search_query}%')) |
+            (Beneficiary.full_name.ilike(f'%{search_query}%'))
+        )
+
+    # Apply Role-Based Access Control
+    if role == 'Admin' or department == 'All':
+        scholarships = sch_query.all()
+        pensions = pen_query.all()
+        rations = rat_query.all()
+        subsidies = sub_query.all()
+    elif department == 'Education':
+        scholarships = sch_query.all()
+    elif department == 'Pension':
+        pensions = pen_query.all()
+    elif department == 'Food & PDS':
+        rations = rat_query.all()
+        subsidies = sub_query.all()
+    elif department == 'Subsidy':
+        subsidies = sub_query.all()
+        
+    all_visible_apps = scholarships + pensions + rations + subsidies
+    
+    stats = {
+        "pending": sum(1 for app in all_visible_apps if app.status == "Pending"),
+        "approved": sum(1 for app in all_visible_apps if app.status == "Approved"),
+        "rejected": sum(1 for app in all_visible_apps if app.status == "Rejected"),
+        "flagged": sum(1 for app in all_visible_apps if app.status == "Flagged")
+    }
+    
+    return render_template('dashboard.html', 
+                           scholarships=scholarships,
+                           pensions=pensions,
+                           rations=rations,
+                           subsidies=subsidies,
+                           officer_department=department,
+                           stats=stats,
+                           search_query=search_query) # Pass search back to keep input filled
+
+# ---------------- EXPORT TO CSV ----------------
+@app.route('/export_csv')
+def export_csv():
+    if 'officer_id' not in session:
+        flash('Please login first.')
+        return redirect(url_for('login'))
+    
+    department = session.get('department')
+    role = session.get('role')
+    
+    # Fetch applications based on role (same logic as dashboard)
+    scholarships, pensions, rations, subsidies = [], [], [], []
     if role == 'Admin' or department == 'All':
         scholarships = ScholarshipApplication.query.all()
         pensions = PensionApplication.query.all()
@@ -297,22 +405,36 @@ def dashboard():
         pensions = PensionApplication.query.all()
     elif department == 'Food & PDS':
         rations = RationApplication.query.all()
-        subsidies = SubsidyApplication.query.all() # Food officer handles subsidies too
+        subsidies = SubsidyApplication.query.all()
     elif department == 'Subsidy':
         subsidies = SubsidyApplication.query.all()
-    
-    return render_template('dashboard.html', 
-                           scholarships=scholarships,
-                           pensions=pensions,
-                           rations=rations,
-                           subsidies=subsidies,
-                           officer_department=department)
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('Logged out.')
-    return redirect(url_for('index'))
 
+    # Create a file-like buffer in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write the CSV Headers
+    writer.writerow(['Application ID', 'Citizen Name', 'Aadhaar Number', 'Scheme Type', 'Status', 'Income'])
+    
+    # Write the data rows
+    for app in scholarships:
+        writer.writerow([app.application_id, app.beneficiary.full_name, app.beneficiary.aadhaar_number, 'Scholarship', app.status, app.annual_family_income])
+    for app in pensions:
+        writer.writerow([app.application_id, app.beneficiary.full_name, app.beneficiary.aadhaar_number, 'Pension', app.status, app.beneficiary.annual_income])
+    for app in rations:
+        writer.writerow([app.application_id, app.beneficiary.full_name, app.beneficiary.aadhaar_number, 'Ration (PDS)', app.status, app.beneficiary.annual_income])
+    for app in subsidies:
+        writer.writerow([app.application_id, app.beneficiary.full_name, app.beneficiary.aadhaar_number, 'Subsidy', app.status, app.annual_income])
+        
+    # Go back to the start of the buffer
+    output.seek(0)
+    
+    # Return the file as a download
+    return Response(
+        output, 
+        mimetype='text/csv', 
+        headers={'Content-Disposition': 'attachment; filename=welfare_applications.csv'}
+    )
 
 @app.route('/fraud_logs')
 def fraud_logs():
@@ -322,28 +444,64 @@ def fraud_logs():
     
     department = session.get('department')
     role = session.get('role')
-    
     logs = []
     
-    # Admin sees everything
+    # Admin sees EVERYTHING (both old generated and new AI-flagged)
     if role == 'Admin' or department == 'All':
         logs = FraudLog.query.order_by(FraudLog.detected_at.desc()).all()
-    # Education Officer sees only Scholarship frauds (SCH-)
     elif department == 'Education':
         logs = FraudLog.query.filter(FraudLog.application_id.like('SCH-%')).order_by(FraudLog.detected_at.desc()).all()
-    # Pension Officer sees only Pension frauds (PEN-)
     elif department == 'Pension':
         logs = FraudLog.query.filter(FraudLog.application_id.like('PEN-%')).order_by(FraudLog.detected_at.desc()).all()
-    # Food Officer sees Ration (RAT-) and Subsidy (SUB-) frauds
     elif department == 'Food & PDS':
         logs = FraudLog.query.filter(
             (FraudLog.application_id.like('RAT-%')) | (FraudLog.application_id.like('SUB-%'))
         ).order_by(FraudLog.detected_at.desc()).all()
-    # Subsidy Officer sees only Subsidy frauds (SUB-)
     elif department == 'Subsidy':
         logs = FraudLog.query.filter(FraudLog.application_id.like('SUB-%')).order_by(FraudLog.detected_at.desc()).all()
     
     return render_template('fraud_logs.html', logs=logs)
+
+# ---------------- VIEW APPLICATION DETAILS ----------------
+@app.route('/application_details/<application_id>')
+def application_details(application_id):
+    if 'officer_id' not in session:
+        return redirect(url_for('login'))
+        
+    app_obj = None
+    app_type = ""
+    scheme_name = ""
+    
+    # Find the application based on the string ID (e.g., SCH-2024-0001)
+    if application_id.startswith('SCH'):
+        app_obj = ScholarshipApplication.query.filter_by(application_id=application_id).first()
+        app_type = 'scholarship'
+        scheme_name = "Post-Matric Scholarship"
+    elif application_id.startswith('PEN'):
+        app_obj = PensionApplication.query.filter_by(application_id=application_id).first()
+        app_type = 'pension'
+        scheme_name = "Old Age Pension"
+    elif application_id.startswith('RAT'):
+        app_obj = RationApplication.query.filter_by(application_id=application_id).first()
+        app_type = 'ration'
+        scheme_name = "Food Security (PDS)"
+    elif application_id.startswith('SUB'):
+        app_obj = SubsidyApplication.query.filter_by(application_id=application_id).first()
+        app_type = 'subsidy'
+        scheme_name = "Subsidy Scheme"
+        
+    if not app_obj:
+        flash("Application not found.")
+        return redirect(url_for('dashboard'))
+        
+    citizen = Beneficiary.query.get_or_404(app_obj.beneficiary_id)
+    
+    return render_template('application_details.html', 
+                           app=app_obj, 
+                           citizen=citizen, 
+                           app_type=app_type,
+                           scheme_name=scheme_name)
+
 @app.route('/update_status/<app_type>/<int:app_id>/<status>', methods=['POST'])
 def update_status(app_type, app_id, status):
     if 'officer_id' not in session:

@@ -1,33 +1,49 @@
-"""
-AI/ML Fraud & Duplicate Detection Module
-Uses simple fuzzy string matching to flag likely duplicate beneficiaries.
-"""
-from difflib import SequenceMatcher
-from models import Beneficiary
+import pandas as pd
+from sklearn.ensemble import IsolationForest
+import sys
+import os
+from datetime import date
 
+# Add parent directory to path to find app.py
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-def similarity(a, b):
-    """Returns a similarity ratio between two strings, 0 to 1."""
-    return SequenceMatcher(None, a.lower().strip(), b.lower().strip()).ratio()
+def get_training_data():
+    """Fetches all beneficiaries and converts to a numeric matrix for the AI"""
+    # LAZY IMPORTS: Import inside the function to avoid circular import errors
+    from app import app, db
+    from models import Beneficiary
+    
+    with app.app_context():
+        benes = Beneficiary.query.all()
+        data = []
+        
+        for b in benes:
+            cat_map = {"Student": 1, "Senior Citizen": 2, "BPL": 3, "General": 4}
+            age = date.today().year - b.date_of_birth.year
+            
+            row = {
+                "age": age,
+                "income": b.annual_income,
+                "category_code": cat_map.get(b.category, 0),
+                "has_bank_account": 1 if b.bank_account_number else 0
+            }
+            data.append(row)
+            
+        return pd.DataFrame(data)
 
+def train_model():
+    """Trains the Isolation Forest model"""
+    print("🔄 Training AI Fraud Detection Model...")
+    df = get_training_data()
+    
+    if df.empty:
+        print("⚠️ No data to train on!")
+        return None
+        
+    model = IsolationForest(contamination=0.15, random_state=42)
+    model.fit(df)
+    print("✅ AI Model Trained Successfully!")
+    return model
 
-def check_duplicate(name, address, id_number, threshold=0.85):
-    """
-    Checks a new applicant against existing beneficiaries.
-    Returns (is_duplicate: bool, matched_with: Beneficiary or None)
-    """
-    existing = Beneficiary.query.all()
-
-    for b in existing:
-        # Exact ID match = certain duplicate
-        if b.id_number.strip() == id_number.strip():
-            return True, b
-
-        # Fuzzy match on name + address = likely duplicate
-        name_sim = similarity(name, b.name)
-        address_sim = similarity(address, b.address)
-
-        if name_sim > threshold and address_sim > threshold:
-            return True, b
-
-    return False, None
+if __name__ == "__main__":
+    train_model()

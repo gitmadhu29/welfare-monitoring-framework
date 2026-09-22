@@ -9,7 +9,8 @@ from werkzeug.security import generate_password_hash
 
 from app import app, db
 from models import (Beneficiary, Scheme, ScholarshipApplication,
-                    PensionApplication, RationApplication, SubsidyApplication, Officer)
+                    PensionApplication, RationApplication, SubsidyApplication, 
+                    Officer, FraudLog) # <--- ADDED FraudLog here
 
 
 SCHEMES = [
@@ -37,6 +38,22 @@ RATION_TYPES = ["BPL", "APL", "Antyodaya Anna Yojana"]
 FIRST_NAMES = ["Aarav","Priya","Rahul","Sneha","Mohit","Anjali","Vikram","Kavya",
                "Suresh","Meena","Ramesh","Geeta"]
 LAST_NAMES = ["Sharma","Patel","Reddy","Iyer","Singh","Nair","Gupta","Das","Khan","Bose"]
+
+# LARGE LIST OF REAL INDIAN COLLEGES
+COLLEGES = [
+    "Presidency University", "IIT Bombay", "NIT Trichy", "BITS Pilani", 
+    "Delhi University", "Anna University", "Christ University", "VIT Vellore",
+    "RV College of Engineering", "PES University", "MS Ramaiah Institute", 
+    "Mount Carmel College", "St. Xavier's College", "Loyola College",
+    "IIT Madras", "IIT Delhi", "IIT Kharagpur", "IIT Kanpur", "IIT Roorkee",
+    "BMS College of Engineering", "Manipal Institute of Technology", "SRM Institute",
+    "Amity University", "Jadavpur University", "Banaras Hindu University",
+    "Aligarh Muslim University", "University of Hyderabad", "Osmania University",
+    "University of Mysore", "Bangalore University", "Mumbai University",
+    "Pune University", "Cochin University of Science and Technology",
+    "Sri Ramachandra University", "KLE Technological University", "Dayananda Sagar University",
+    "Nitte Meenakshi Institute", "Birla Institute of Technology", "Jamia Millia Islamia"
+]
 
 def rand_aadhaar():
     return ''.join(str(random.randint(0,9)) for _ in range(12))
@@ -106,72 +123,116 @@ def gen_apps(benes, schemes):
 
         if cat == "Student":
             sch = next(x for x in schemes if x.name == "Post-Matric Scholarship")
+            status = random.choices(["Pending","Approved","Flagged","Rejected"], weights=[40,40,10,10])[0]
+            app_id = f"SCH-2024-{s+1:04d}"
+            
             app_obj = ScholarshipApplication(
-                application_id=f"SCH-2024-{s+1:04d}",
+                application_id=app_id,
                 beneficiary=b, scheme=sch,
                 student_id=f"STU{random.randint(100000,999999)}",
                 guardian_name=f"Guardian of {b.full_name}",
-                institution_name=f"College_{random.randint(1,20)}",
+                institution_name=random.choice(COLLEGES),
                 course_degree=random.choice(COURSES),
                 academic_year="2023-2024",
                 previous_year_marks_percentage=round(random.uniform(55,95),2),
                 annual_family_income=b.annual_income,
-                status=random.choices(["Pending","Approved","Flagged","Rejected"],
-                                      weights=[40,40,10,10])[0]
+                status=status
             )
-            db.session.add(app_obj) # <--- ADDED THIS
+            db.session.add(app_obj)
+            
+            # CREATE FRAUD LOG IF FLAGGED
+            if status == "Flagged":
+                db.session.add(FraudLog(
+                    aadhaar_number=b.aadhaar_number,
+                    application_id=app_id,
+                    reason=f"AI Model flagged this as anomalous (Age: {date.today().year - b.date_of_birth.year}, Income: {b.annual_income}, Cat: {b.category}).",
+                    severity="High"
+                ))
             s+=1
 
         elif cat == "Senior Citizen":
             sch = next(x for x in schemes if "Pension" in x.name)
+            status = random.choices(["Pending","Approved","Flagged"], weights=[40,50,10])[0]
+            app_id = f"PEN-2024-{p+1:04d}"
+            
             app_obj = PensionApplication(
-                application_id=f"PEN-2024-{p+1:04d}",
+                application_id=app_id,
                 beneficiary=b, scheme=sch,
                 pensioner_id=f"PEN{random.randint(100000,999999)}",
                 retirement_date=rand_dob(58,75) if random.random()>0.3 else None,
-                previous_employer_details=random.choice(
-                    ["Retired from Pvt Ltd","Retired Govt Employee","Unorganized Worker"]),
+                previous_employer_details=random.choice(["Retired from Pvt Ltd","Retired Govt Employee","Unorganized Worker"]),
                 spouse_name=f"Spouse of {b.full_name}",
                 age_verified=True,
-                status=random.choices(["Pending","Approved","Flagged"],
-                                      weights=[40,50,10])[0]
+                status=status
             )
-            db.session.add(app_obj) # <--- ADDED THIS
+            db.session.add(app_obj)
+            
+            # CREATE FRAUD LOG IF FLAGGED
+            if status == "Flagged":
+                db.session.add(FraudLog(
+                    aadhaar_number=b.aadhaar_number,
+                    application_id=app_id,
+                    reason=f"AI Model flagged this as anomalous (Age: {date.today().year - b.date_of_birth.year}, Income: {b.annual_income}, Cat: {b.category}).",
+                    severity="High"
+                ))
             p+=1
 
         elif cat == "BPL":
             sch = next(x for x in schemes if "Food Security" in x.name)
+            status = random.choices(["Pending","Approved","Flagged"], weights=[40,50,10])[0]
+            app_id = f"RAT-2024-{r+1:04d}"
+            
             app_obj = RationApplication(
-                application_id=f"RAT-2024-{r+1:04d}",
+                application_id=app_id,
                 beneficiary=b, scheme=sch,
                 ration_card_number=f"RC{random.randint(10000000,99999999)}",
                 ration_card_type=random.choice(RATION_TYPES),
                 total_family_members=random.randint(2,8),
                 income_certificate_number=f"IC{random.randint(100000,999999)}",
                 assigned_fps_shop_id=f"FPS-{random.randint(1,100):03d}",
-                status=random.choices(["Pending","Approved","Flagged"],
-                                      weights=[40,50,10])[0]
+                status=status
             )
-            db.session.add(app_obj) # <--- ADDED THIS
+            db.session.add(app_obj)
+            
+            # CREATE FRAUD LOG IF FLAGGED
+            if status == "Flagged":
+                db.session.add(FraudLog(
+                    aadhaar_number=b.aadhaar_number,
+                    application_id=app_id,
+                    reason=f"AI Model flagged this as anomalous (Age: {date.today().year - b.date_of_birth.year}, Income: {b.annual_income}, Cat: {b.category}).",
+                    severity="High"
+                ))
             r+=1
 
         # General OR BPL can also apply for subsidy
         if cat in ("General","BPL"):
             sch = next(x for x in schemes if "Ujjwala" in x.name)
+            status = random.choices(["Pending","Approved","Flagged"], weights=[40,50,10])[0]
+            app_id = f"SUB-2024-{su+1:04d}"
+            
             app_obj = SubsidyApplication(
-                application_id=f"SUB-2024-{su+1:04d}",
+                application_id=app_id,
                 beneficiary=b, scheme=sch,
                 subsidy_type="LPG Cooking Gas",
                 connection_number=f"LPG{random.randint(10000000,99999999)}",
                 linked_bank_account=b.bank_account_number,
                 annual_income=b.annual_income,
-                status=random.choices(["Pending","Approved","Flagged"],
-                                      weights=[40,50,10])[0]
+                status=status
             )
-            db.session.add(app_obj) 
+            db.session.add(app_obj)
+            
+            # CREATE FRAUD LOG IF FLAGGED
+            if status == "Flagged":
+                db.session.add(FraudLog(
+                    aadhaar_number=b.aadhaar_number,
+                    application_id=app_id,
+                    reason=f"AI Model flagged this as anomalous (Age: {date.today().year - b.date_of_birth.year}, Income: {b.annual_income}, Cat: {b.category}).",
+                    severity="High"
+                ))
             su+=1
 
     print(f"Generated: Scholarship={s}, Pension={p}, Ration={r}, Subsidy={su}")
+
 def gen_officers():
     return [
         Officer(username="admin",           password_hash=generate_password_hash("admin123"),
@@ -186,6 +247,7 @@ def gen_officers():
         Officer(username="subsidy_officer",  password_hash=generate_password_hash("sub123"),
                 full_name="Subsidy Officer",  department="Subsidy"),
     ]
+
 def main():
     with app.app_context():
         db.drop_all()
