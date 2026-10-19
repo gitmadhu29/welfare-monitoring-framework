@@ -10,8 +10,7 @@ from werkzeug.security import generate_password_hash
 from app import app, db
 from models import (Beneficiary, Scheme, ScholarshipApplication,
                     PensionApplication, RationApplication, SubsidyApplication, 
-                    Officer, FraudLog) # <--- ADDED FraudLog here
-
+                    Officer, FraudLog, SchemeFund)
 
 SCHEMES = [
     {"name": "Post-Matric Scholarship", "category": "Student",
@@ -248,6 +247,27 @@ def gen_officers():
                 full_name="Subsidy Officer",  department="Subsidy"),
     ]
 
+def gen_funds(schemes):
+    funds = []
+    fund_data = {
+        "Post-Matric Scholarship": {"total": 5000000, "per_person": 25000},
+        "Indira Gandhi National Old Age Pension": {"total": 3000000, "per_person": 12000},
+        "National Food Security Act (PDS)": {"total": 8000000, "per_person": 8000},
+        "PM Ujjwala Yojana (LPG)": {"total": 2000000, "per_person": 1600},
+        "Electricity Subsidy": {"total": 1500000, "per_person": 3000},
+    }
+    
+    for scheme in schemes:
+        data = fund_data.get(scheme.name, {"total": 1000000, "per_person": 5000})
+        funds.append(SchemeFund(
+            scheme_id=scheme.id,
+            total_budget=data["total"],
+            per_beneficiary_amount=data["per_person"],
+            allocated_amount=0,
+            pending_amount=0
+        ))
+    return funds
+
 def main():
     with app.app_context():
         db.drop_all()
@@ -263,7 +283,13 @@ def main():
 
         db.session.add_all(gen_officers())
         db.session.commit()
-        print("✅ Database seeded: 60 citizens + 4 scheme tables + officers.")
+        
+        # NEW: Generate government funds
+        funds = gen_funds(schemes)
+        db.session.add_all(funds)
+        db.session.commit()
+        
+        print("✅ Database seeded: 60 citizens + 4 scheme tables + officers + funds.")
 
 if __name__ == "__main__":
     main()

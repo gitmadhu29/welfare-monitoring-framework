@@ -2,99 +2,321 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Application Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Review | Public Welfare Monitoring Framework</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; }
-        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 0; }
-        h3 { color: #007bff; margin-bottom: 15px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .info-item { font-size: 15px; }
-        .info-item strong { color: #555; }
-        .actions { text-align: center; margin-top: 30px; }
-        .btn { display: inline-block; text-decoration: none; color: white; padding: 12px 30px; border-radius: 4px; font-size: 16px; border: none; cursor: pointer; margin: 0 10px; }
-        .btn-approve { background-color: #28a745; }
-        .btn-reject { background-color: #dc3545; }
-        .btn-back { background-color: #6c757d; }
-        .status-Pending { color: orange; font-weight: bold; }
-        .status-Approved { color: green; font-weight: bold; }
-        .status-Rejected { color: red; font-weight: bold; }
-        .status-Flagged { color: darkred; font-weight: bold; }
+        :root {
+            --gov-navy: #0b3d66;
+            --gov-navy-dark: #072a47;
+            --gov-saffron: #ff9933;
+            --gov-green: #138808;
+            --gov-red: #c0392b;
+            --gov-bg: #f5f7fa;
+        }
+
+        body {
+            font-family: 'Noto Sans', 'Poppins', Arial, sans-serif;
+            background: var(--gov-bg);
+            margin: 0;
+            color: #1f2937;
+        }
+
+        h1, h2, h3, .brand-title {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .tricolor-strip {
+            height: 5px;
+            background: linear-gradient(to right, var(--gov-saffron) 33%, #ffffff 33%, #ffffff 66%, var(--gov-green) 66%);
+        }
+
+        .gov-header {
+            background: var(--gov-navy);
+            color: #fff;
+            padding: 14px 0;
+        }
+
+        .gov-header .emblem {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gov-navy);
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .gov-header .brand-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .gov-header .brand-subtitle {
+            font-size: 0.78rem;
+            color: #cfe0ee;
+            margin: 0;
+        }
+
+        .content-wrapper {
+            max-width: 860px;
+            margin: 30px auto 60px;
+            padding: 0 20px;
+        }
+
+        .review-card {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e3e8ee;
+            box-shadow: 0 4px 14px rgba(11, 61, 102, 0.06);
+            padding: 26px 30px;
+            margin-bottom: 24px;
+        }
+
+        .review-card .card-top {
+            height: 5px;
+            background: var(--gov-saffron);
+            margin: -26px -30px 22px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .review-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gov-navy-dark);
+            margin-bottom: 10px;
+        }
+
+        .review-meta {
+            font-size: 0.92rem;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+
+        .review-meta strong {
+            color: #1f2937;
+        }
+
+        .status-Pending { color: #b8860b; font-weight: 700; }
+        .status-Approved { color: var(--gov-green); font-weight: 700; }
+        .status-Rejected { color: var(--gov-red); font-weight: 700; }
+        .status-Flagged { color: #8b0000; font-weight: 700; }
+
+        .section-title {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--gov-navy);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .section-title i {
+            color: var(--gov-saffron);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 20px;
+        }
+
+        @media (max-width: 576px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-item {
+            font-size: 0.9rem;
+            background: #f7fafc;
+            border: 1px solid #e9eef3;
+            border-radius: 6px;
+            padding: 8px 12px;
+        }
+
+        .info-item strong {
+            color: #4b5563;
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 2px;
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .actions form {
+            display: inline;
+        }
+
+        .actions .btn {
+            padding: 11px 26px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            border-radius: 6px;
+            margin: 6px;
+        }
+
+        .btn-approve-app {
+            background: var(--gov-green);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-approve-app:hover {
+            background: #0d6b06;
+            color: #fff;
+        }
+
+        .btn-reject-app {
+            background: var(--gov-red);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-reject-app:hover {
+            background: #a33224;
+            color: #fff;
+        }
+
+        .btn-back-app {
+            background: #6c757d;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-back-app:hover {
+            background: #5a6268;
+            color: #fff;
+        }
+
+        .processed-note {
+            color: #6b7280;
+            margin-top: 14px;
+            font-size: 0.88rem;
+        }
+
+        .gov-footer {
+            background: var(--gov-navy-dark);
+            color: #cfe0ee;
+            padding: 18px 20px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="card">
-        <h2>Application Review: {{ scheme_name }}</h2>
-        <p><strong>Application ID:</strong> {{ app.application_id }} | <strong>Status:</strong> <span class="status-{{ app.status }}">{{ app.status }}</span></p>
-        
-        <div style="margin-top: 20px;">
-            <h3>Citizen Master Data</h3>
-            <div class="info-grid">
-                <div class="info-item"><strong>Name:</strong> {{ citizen.full_name }}</div>
-                <div class="info-item"><strong>User ID:</strong> {{ citizen.user_id }}</div>
-                <div class="info-item"><strong>Aadhaar:</strong> {{ citizen.aadhaar_number }}</div>
-                <div class="info-item"><strong>DOB:</strong> {{ citizen.date_of_birth.strftime('%Y-%m-%d') }}</div>
-                <div class="info-item"><strong>Category:</strong> {{ citizen.category }}</div>
-                <div class="info-item"><strong>Phone:</strong> {{ citizen.phone }}</div>
-                <div class="info-item"><strong>Email:</strong> {{ citizen.email }}</div>
-                <div class="info-item"><strong>Address:</strong> {{ citizen.address }}, {{ citizen.district }}, {{ citizen.state }}</div>
-                <div class="info-item"><strong>Annual Income:</strong> ₹{{ citizen.annual_income }}</div>
-                <div class="info-item"><strong>Bank A/C:</strong> {{ citizen.bank_account_number }} (IFSC: {{ citizen.ifsc_code }})</div>
+    <div class="tricolor-strip"></div>
+
+    <!-- Header -->
+    <header class="gov-header">
+        <div class="container d-flex align-items-center justify-content-center justify-content-md-start gap-3 flex-wrap text-center text-md-start py-2">
+            <div class="emblem"><i class="bi bi-bank2"></i></div>
+            <div>
+                <p class="brand-title">Public Welfare Monitoring Framework</p>
+                <p class="brand-subtitle">Government of India | Ministry of Social Welfare (Demo Portal)</p>
             </div>
         </div>
-    </div>
+    </header>
 
-    <div class="card">
-        <h3>Scheme Specific Details</h3>
-        <div class="info-grid">
-            {% if app_type == 'scholarship' %}
-                <div class="info-item"><strong>Student ID:</strong> {{ app.student_id }}</div>
-                <div class="info-item"><strong>Guardian:</strong> {{ app.guardian_name }}</div>
-                <div class="info-item"><strong>Institution:</strong> {{ app.institution_name }}</div>
-                <div class="info-item"><strong>Course:</strong> {{ app.course_degree }}</div>
-                <div class="info-item"><strong>Academic Year:</strong> {{ app.academic_year }}</div>
-                <div class="info-item"><strong>Marks (%):</strong> {{ app.previous_year_marks_percentage }}</div>
-                
-            {% elif app_type == 'pension' %}
-                <div class="info-item"><strong>Pensioner ID:</strong> {{ app.pensioner_id }}</div>
-                <div class="info-item"><strong>Retirement Date:</strong> {{ app.retirement_date.strftime('%Y-%m-%d') if app.retirement_date else 'N/A' }}</div>
-                <div class="info-item"><strong>Employer:</strong> {{ app.previous_employer_details }}</div>
-                <div class="info-item"><strong>Spouse Name:</strong> {{ app.spouse_name }}</div>
-                
-            {% elif app_type == 'ration' %}
-                <div class="info-item"><strong>Ration Card No:</strong> {{ app.ration_card_number }}</div>
-                <div class="info-item"><strong>Card Type:</strong> {{ app.ration_card_type }}</div>
-                <div class="info-item"><strong>Family Members:</strong> {{ app.total_family_members }}</div>
-                <div class="info-item"><strong>Income Cert No:</strong> {{ app.income_certificate_number }}</div>
-                <div class="info-item"><strong>FPS Shop ID:</strong> {{ app.assigned_fps_shop_id }}</div>
-                
-            {% elif app_type == 'subsidy' %}
-                <div class="info-item"><strong>Subsidy Type:</strong> {{ app.subsidy_type }}</div>
-                <div class="info-item"><strong>Connection No:</strong> {{ app.connection_number }}</div>
-                <div class="info-item"><strong>Linked Bank A/C:</strong> {{ app.linked_bank_account }}</div>
-                <div class="info-item"><strong>Income:</strong> ₹{{ app.annual_income }}</div>
+    <div class="content-wrapper">
+
+        <!-- Application summary -->
+        <div class="review-card">
+            <div class="card-top"></div>
+            <div class="review-header">
+                <h2><i class="bi bi-file-earmark-check-fill me-2"></i>Application Review: {{ scheme_name }}</h2>
+                <p class="review-meta"><strong>Application ID:</strong> {{ app.application_id }} &nbsp;|&nbsp; <strong>Status:</strong> <span class="status-{{ app.status }}">{{ app.status }}</span></p>
+            </div>
+
+            <div class="section-title"><i class="bi bi-person-vcard-fill"></i>Citizen Master Data</div>
+            <div class="info-grid">
+                <div class="info-item"><strong>Name</strong>{{ citizen.full_name }}</div>
+                <div class="info-item"><strong>User ID</strong>{{ citizen.user_id }}</div>
+                <div class="info-item"><strong>Aadhaar</strong>{{ citizen.aadhaar_number }}</div>
+                <div class="info-item"><strong>DOB</strong>{{ citizen.date_of_birth.strftime('%Y-%m-%d') }}</div>
+                <div class="info-item"><strong>Category</strong>{{ citizen.category }}</div>
+                <div class="info-item"><strong>Phone</strong>{{ citizen.phone }}</div>
+                <div class="info-item"><strong>Email</strong>{{ citizen.email }}</div>
+                <div class="info-item"><strong>Address</strong>{{ citizen.address }}, {{ citizen.district }}, {{ citizen.state }}</div>
+                <div class="info-item"><strong>Annual Income</strong>₹{{ citizen.annual_income }}</div>
+                <div class="info-item"><strong>Bank A/C</strong>{{ citizen.bank_account_number }} (IFSC: {{ citizen.ifsc_code }})</div>
+            </div>
+        </div>
+
+        <!-- Scheme-specific details -->
+        <div class="review-card">
+            <div class="card-top"></div>
+            <div class="section-title"><i class="bi bi-bookmark-star-fill"></i>Scheme Specific Details</div>
+            <div class="info-grid">
+                {% if app_type == 'scholarship' %}
+                    <div class="info-item"><strong>Student ID</strong>{{ app.student_id }}</div>
+                    <div class="info-item"><strong>Guardian</strong>{{ app.guardian_name }}</div>
+                    <div class="info-item"><strong>Institution</strong>{{ app.institution_name }}</div>
+                    <div class="info-item"><strong>Course</strong>{{ app.course_degree }}</div>
+                    <div class="info-item"><strong>Academic Year</strong>{{ app.academic_year }}</div>
+                    <div class="info-item"><strong>Marks (%)</strong>{{ app.previous_year_marks_percentage }}</div>
+
+                {% elif app_type == 'pension' %}
+                    <div class="info-item"><strong>Pensioner ID</strong>{{ app.pensioner_id }}</div>
+                    <div class="info-item"><strong>Retirement Date</strong>{{ app.retirement_date.strftime('%Y-%m-%d') if app.retirement_date else 'N/A' }}</div>
+                    <div class="info-item"><strong>Employer</strong>{{ app.previous_employer_details }}</div>
+                    <div class="info-item"><strong>Spouse Name</strong>{{ app.spouse_name }}</div>
+
+                {% elif app_type == 'ration' %}
+                    <div class="info-item"><strong>Ration Card No</strong>{{ app.ration_card_number }}</div>
+                    <div class="info-item"><strong>Card Type</strong>{{ app.ration_card_type }}</div>
+                    <div class="info-item"><strong>Family Members</strong>{{ app.total_family_members }}</div>
+                    <div class="info-item"><strong>Income Cert No</strong>{{ app.income_certificate_number }}</div>
+                    <div class="info-item"><strong>FPS Shop ID</strong>{{ app.assigned_fps_shop_id }}</div>
+
+                {% elif app_type == 'subsidy' %}
+                    <div class="info-item"><strong>Subsidy Type</strong>{{ app.subsidy_type }}</div>
+                    <div class="info-item"><strong>Connection No</strong>{{ app.connection_number }}</div>
+                    <div class="info-item"><strong>Linked Bank A/C</strong>{{ app.linked_bank_account }}</div>
+                    <div class="info-item"><strong>Income</strong>₹{{ app.annual_income }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <a href="/dashboard" class="btn btn-back-app"><i class="bi bi-arrow-left-circle me-1"></i>Back to Dashboard</a>
+
+            {% if app.status == 'Pending' or app.status == 'Flagged' %}
+                <form action="/update_status/{{ app_type }}/{{ app.id }}/Approved" method="POST">
+                    <button type="submit" class="btn btn-approve-app"><i class="bi bi-check-circle-fill me-1"></i>Approve Application</button>
+                </form>
+                <form action="/update_status/{{ app_type }}/{{ app.id }}/Rejected" method="POST">
+                    <button type="submit" class="btn btn-reject-app"><i class="bi bi-x-circle-fill me-1"></i>Reject Application</button>
+                </form>
+            {% else %}
+                <p class="processed-note">This application has already been processed.</p>
             {% endif %}
         </div>
+
     </div>
 
-    <div class="actions">
-        <a href="/dashboard" class="btn btn-back">Back to Dashboard</a>
-        
-        {% if app.status == 'Pending' or app.status == 'Flagged' %}
-            <form action="/update_status/{{ app_type }}/{{ app.id }}/Approved" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-approve">Approve Application</button>
-            </form>
-            <form action="/update_status/{{ app_type }}/{{ app.id }}/Rejected" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-reject">Reject Application</button>
-            </form>
-        {% else %}
-            <p style="color: #666; margin-top: 15px;">This application has already been processed.</p>
-        {% endif %}
-    </div>
-</div>
+    <!-- Footer -->
+    <footer class="gov-footer">
+        <p class="mb-0">&copy; 2026 Public Welfare Monitoring Framework. All rights reserved.</p>
+    </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

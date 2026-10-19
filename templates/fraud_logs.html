@@ -2,121 +2,345 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Fraud Logs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Detection Logs | Public Welfare Monitoring Framework</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        nav { display: flex; justify-content: space-between; align-items: center; background: #333; color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; }
-        nav a { color: white; text-decoration: none; margin-left: 15px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #dc3545; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        h3 { border-left: 5px solid #dc3545; padding-left: 10px; color: #333; }
+        :root {
+            --gov-navy: #0b3d66;
+            --gov-navy-dark: #072a47;
+            --gov-saffron: #ff9933;
+            --gov-green: #138808;
+            --gov-red: #c0392b;
+            --gov-bg: #f5f7fa;
+        }
+
+        body {
+            font-family: 'Noto Sans', 'Poppins', Arial, sans-serif;
+            background: var(--gov-bg);
+            margin: 0;
+            color: #1f2937;
+        }
+
+        h1, h2, h3, .brand-title {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .tricolor-strip {
+            height: 5px;
+            background: linear-gradient(to right, var(--gov-saffron) 33%, #ffffff 33%, #ffffff 66%, var(--gov-green) 66%);
+        }
+
+        .gov-header {
+            background: var(--gov-navy);
+            color: #fff;
+            padding: 14px 0;
+        }
+
+        .gov-header .emblem {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gov-navy);
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .gov-header .brand-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .gov-header .brand-subtitle {
+            font-size: 0.78rem;
+            color: #cfe0ee;
+            margin: 0;
+        }
+
+        .page-toolbar {
+            background: var(--gov-navy-dark);
+            padding: 14px 0;
+        }
+
+        .page-toolbar h2 {
+            color: #fff;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-toolbar h2 i {
+            color: #ffcf80;
+        }
+
+        .page-toolbar .nav-link {
+            color: #e9f1f8 !important;
+            font-weight: 500;
+            font-size: 0.88rem;
+        }
+
+        .page-toolbar .nav-link:hover {
+            color: var(--gov-saffron) !important;
+        }
+
+        .page-toolbar .nav-link.logout {
+            color: #ffb3b3 !important;
+        }
+
+        .content-wrapper {
+            max-width: 1100px;
+            margin: 30px auto 60px;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--gov-navy-dark);
+            border-left: 4px solid var(--gov-red);
+            padding-left: 12px;
+            margin: 28px 0 14px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .log-card {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e3e8ee;
+            box-shadow: 0 4px 14px rgba(11, 61, 102, 0.06);
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: var(--gov-navy);
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border: none;
+            padding: 12px 14px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 12px 14px;
+            font-size: 0.88rem;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f7fafc;
+        }
+
+        .reason-text {
+            color: var(--gov-red);
+            font-weight: 600;
+        }
+
+        .severity-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .empty-row td {
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+            padding: 18px;
+        }
+
+        .clean-banner {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gov-green);
+        }
+
+        .clean-banner i {
+            font-size: 2rem;
+        }
+
+        .gov-footer {
+            background: var(--gov-navy-dark);
+            color: #cfe0ee;
+            padding: 18px 20px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <nav>
-        <h2>⚠️ Fraud Detection Logs</h2>
-        <div>
-            <a href="/dashboard">Back to Dashboard</a>
-            <a href="/logout">Logout</a>
+    <div class="tricolor-strip"></div>
+
+    <!-- Header -->
+    <header class="gov-header">
+        <div class="container d-flex align-items-center justify-content-center justify-content-md-start gap-3 flex-wrap text-center text-md-start py-2">
+            <div class="emblem"><i class="bi bi-bank2"></i></div>
+            <div>
+                <p class="brand-title">Public Welfare Monitoring Framework</p>
+                <p class="brand-subtitle">Government of India | Ministry of Social Welfare (Demo Portal)</p>
+            </div>
         </div>
-    </nav>
+    </header>
 
-    {% if session.get('role') == 'Admin' %}
-        
-        <!-- ADMIN VIEW: 4 Separate Tables -->
-        
-        <h3>Scholarship Frauds</h3>
-        <table>
-            <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
-            {% for log in logs if log.application_id.startswith('SCH') %}
-            <tr>
-                <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>{{ log.aadhaar_number }}</td>
-                <td>{{ log.application_id }}</td>
-                <td style="color: red; font-weight: bold;">{{ log.reason }}</td>
-                <td>{{ log.severity }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5" style="text-align:center;">No Scholarship frauds detected.</td></tr>
-            {% endfor %}
-        </table>
+    <!-- Page toolbar -->
+    <div class="page-toolbar">
+        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h2><i class="bi bi-exclamation-triangle-fill"></i>Fraud Detection Logs</h2>
+            <div class="d-flex gap-3">
+                <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left-circle me-1"></i>Back to Dashboard</a>
+                <a href="/logout" class="nav-link logout"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+            </div>
+        </div>
+    </div>
 
-        <h3>Pension Frauds</h3>
-        <table>
-            <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
-            {% for log in logs if log.application_id.startswith('PEN') %}
-            <tr>
-                <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>{{ log.aadhaar_number }}</td>
-                <td>{{ log.application_id }}</td>
-                <td style="color: red; font-weight: bold;">{{ log.reason }}</td>
-                <td>{{ log.severity }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5" style="text-align:center;">No Pension frauds detected.</td></tr>
-            {% endfor %}
-        </table>
+    <div class="content-wrapper">
 
-        <h3>Ration Frauds</h3>
-        <table>
-            <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
-            {% for log in logs if log.application_id.startswith('RAT') %}
-            <tr>
-                <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>{{ log.aadhaar_number }}</td>
-                <td>{{ log.application_id }}</td>
-                <td style="color: red; font-weight: bold;">{{ log.reason }}</td>
-                <td>{{ log.severity }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5" style="text-align:center;">No Ration frauds detected.</td></tr>
-            {% endfor %}
-        </table>
+        {% if session.get('role') == 'Admin' %}
 
-        <h3>Subsidy Frauds</h3>
-        <table>
-            <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
-            {% for log in logs if log.application_id.startswith('SUB') %}
-            <tr>
-                <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>{{ log.aadhaar_number }}</td>
-                <td>{{ log.application_id }}</td>
-                <td style="color: red; font-weight: bold;">{{ log.reason }}</td>
-                <td>{{ log.severity }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5" style="text-align:center;">No Subsidy frauds detected.</td></tr>
-            {% endfor %}
-        </table>
+            <!-- ADMIN VIEW: 4 Separate Tables -->
 
-    {% else %}
-        
-        <!-- OFFICER VIEW: 1 Single Table (Filtered by their department) -->
-        <table>
-            <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
-            {% for log in logs %}
-            <tr>
-                <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>{{ log.aadhaar_number }}</td>
-                <td>{{ log.application_id }}</td>
-                <td style="color: red; font-weight: bold;">{{ log.reason }}</td>
-                <td>{{ log.severity }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="5" style="text-align: center;">No fraud detected in your department. System is clean!</td>
-            </tr>
-            {% endfor %}
-        </table>
+            <div class="section-title">Scholarship Frauds</div>
+            <div class="log-card mb-4">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
+                        {% for log in logs if log.application_id.startswith('SCH') %}
+                        <tr>
+                            <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ log.aadhaar_number }}</td>
+                            <td>{{ log.application_id }}</td>
+                            <td class="reason-text">{{ log.reason }}</td>
+                            <td><span class="badge severity-badge bg-danger">{{ log.severity }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-row"><td colspan="5">No Scholarship frauds detected.</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
 
-    {% endif %}
+            <div class="section-title">Pension Frauds</div>
+            <div class="log-card mb-4">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
+                        {% for log in logs if log.application_id.startswith('PEN') %}
+                        <tr>
+                            <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ log.aadhaar_number }}</td>
+                            <td>{{ log.application_id }}</td>
+                            <td class="reason-text">{{ log.reason }}</td>
+                            <td><span class="badge severity-badge bg-danger">{{ log.severity }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-row"><td colspan="5">No Pension frauds detected.</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
 
-</div>
+            <div class="section-title">Ration Frauds</div>
+            <div class="log-card mb-4">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
+                        {% for log in logs if log.application_id.startswith('RAT') %}
+                        <tr>
+                            <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ log.aadhaar_number }}</td>
+                            <td>{{ log.application_id }}</td>
+                            <td class="reason-text">{{ log.reason }}</td>
+                            <td><span class="badge severity-badge bg-danger">{{ log.severity }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-row"><td colspan="5">No Ration frauds detected.</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
 
+            <div class="section-title">Subsidy Frauds</div>
+            <div class="log-card mb-4">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
+                        {% for log in logs if log.application_id.startswith('SUB') %}
+                        <tr>
+                            <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ log.aadhaar_number }}</td>
+                            <td>{{ log.application_id }}</td>
+                            <td class="reason-text">{{ log.reason }}</td>
+                            <td><span class="badge severity-badge bg-danger">{{ log.severity }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-row"><td colspan="5">No Subsidy frauds detected.</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+        {% else %}
+
+            <!-- OFFICER VIEW: 1 Single Table (Filtered by their department) -->
+            <div class="log-card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr><th>Detected At</th><th>Aadhaar Number</th><th>Application ID</th><th>Fraud Reason</th><th>Severity</th></tr>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ log.aadhaar_number }}</td>
+                            <td>{{ log.application_id }}</td>
+                            <td class="reason-text">{{ log.reason }}</td>
+                            <td><span class="badge severity-badge bg-danger">{{ log.severity }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="clean-banner">
+                                    <i class="bi bi-patch-check-fill d-block mb-2"></i>
+                                    No fraud detected in your department. System is clean!
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="gov-footer">
+        <p class="mb-0">&copy; 2026 Public Welfare Monitoring Framework. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

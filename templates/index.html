@@ -1,46 +1,307 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Welfare Schemes Portal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welfare Schemes Portal | Government Welfare Monitoring Framework</title>
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: Arial; background: #f4f7f6; margin: 0; padding: 20px; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-width: 1000px; margin: auto; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
-        .card h3 { color: #007bff; margin-top: 0; }
-        .card p { font-size: 14px; color: #666; height: 40px; }
-        .btn-apply { display: inline-block; text-decoration: none; background: #28a745; color: white; padding: 10px 20px; border-radius: 4px; margin-top: 10px; }
-        .nav { text-align: right; margin-bottom: 20px; }
-        .nav a { margin-left: 15px; text-decoration: none; color: #333; font-weight: bold; }
+        :root {
+            --gov-navy: #0b3d66;
+            --gov-navy-dark: #072a47;
+            --gov-saffron: #ff9933;
+            --gov-green: #138808;
+            --gov-bg: #f5f7fa;
+        }
+
+        body {
+            font-family: 'Noto Sans', 'Poppins', Arial, sans-serif;
+            background: var(--gov-bg);
+            margin: 0;
+            color: #1f2937;
+        }
+
+        h1, h2, h3, .brand-title {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Tricolor top strip */
+        .tricolor-strip {
+            height: 5px;
+            background: linear-gradient(to right, var(--gov-saffron) 33%, #ffffff 33%, #ffffff 66%, var(--gov-green) 66%);
+        }
+
+        /* Header / branding bar */
+        .gov-header {
+            background: var(--gov-navy);
+            color: #fff;
+            padding: 14px 0;
+        }
+
+        .gov-header .emblem {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gov-navy);
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .gov-header .brand-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .gov-header .brand-subtitle {
+            font-size: 0.78rem;
+            color: #cfe0ee;
+            margin: 0;
+        }
+
+        /* Navbar */
+        .gov-navbar {
+            background: var(--gov-navy-dark);
+        }
+
+        .gov-navbar .nav-link {
+            color: #e9f1f8 !important;
+            font-weight: 500;
+            font-size: 0.92rem;
+        }
+
+        .gov-navbar .nav-link:hover {
+            color: var(--gov-saffron) !important;
+        }
+
+        .gov-navbar .btn-login {
+            border: 1px solid #ffffff55;
+            color: #fff;
+            font-size: 0.88rem;
+            padding: 6px 14px;
+        }
+
+        .gov-navbar .btn-login:hover {
+            background: #ffffff15;
+            color: #fff;
+        }
+
+        .gov-navbar .btn-logout {
+            color: #ffb3b3 !important;
+        }
+
+        /* Hero section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--gov-navy) 0%, #114a7c 100%);
+            color: #fff;
+            padding: 40px 20px 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-section h1 {
+            font-weight: 700;
+            font-size: 1.75rem;
+        }
+
+        @media (min-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .hero-section p {
+            color: #d7e6f2;
+            max-width: 640px;
+            margin: 10px auto 0;
+        }
+
+        /* Scheme cards */
+        .schemes-wrapper {
+            max-width: 1140px;
+            margin: 40px auto 60px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .scheme-card {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e3e8ee;
+            box-shadow: 0 4px 14px rgba(11, 61, 102, 0.08);
+            height: 100%;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            overflow: hidden;
+        }
+
+        .scheme-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(11, 61, 102, 0.15);
+        }
+
+        .scheme-card .card-top {
+            height: 5px;
+            background: var(--gov-saffron);
+        }
+
+        .scheme-card .card-body {
+            padding: 22px;
+        }
+
+        .scheme-card .scheme-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: #eaf2fb;
+            color: var(--gov-navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+        }
+
+        .scheme-card h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--gov-navy-dark);
+            margin-bottom: 8px;
+        }
+
+        .scheme-card p {
+            font-size: 0.88rem;
+            color: #6b7280;
+            min-height: 42px;
+        }
+
+        .btn-apply {
+            background: var(--gov-green);
+            color: #fff;
+            border: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 9px 20px;
+            border-radius: 5px;
+            transition: background 0.15s ease;
+        }
+
+        .btn-apply:hover {
+            background: #0d6b06;
+            color: #fff;
+        }
+
+        .btn-apply i {
+            margin-left: 4px;
+        }
+
+        /* Footer */
+        .gov-footer {
+            background: var(--gov-navy-dark);
+            color: #cfe0ee;
+            padding: 24px 20px;
+            text-align: center;
+            font-size: 0.82rem;
+        }
+
+        .gov-footer a {
+            color: #ffd699;
+            text-decoration: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
     </style>
 </head>
 <body>
-    <!-- Top Navigation (Scenario 1) -->
-    <div class="nav">
-        {% if session['citizen_id'] %}
-            <a href="/citizen_dashboard">My Dashboard</a>
-            <a href="/logout" style="color: red;">Logout</a>
-        {% else %}
-            <a href="/citizen_login">Citizen Login</a>
-            <a href="/login">Officer Login</a>
-        {% endif %}
-    </div>
 
-    <div class="header">
-        <h1>Available Welfare Schemes</h1>
-        <p>Select a scheme below to apply</p>
-    </div>
+    <div class="tricolor-strip"></div>
 
-    <!-- Scheme Cards (Scenario 2) -->
-    <div class="grid">
-        {% for s in schemes %}
-        <div class="card">
-            <h3>{{ s.name }}</h3>
-            <p>{{ s.description }}</p>
-            <!-- This passes the scheme_id to the URL -->
-            <a href="/citizen_login?scheme_id={{ s.id }}" class="btn-apply">Apply Now</a>
+    <!-- Header (Added flex-wrap and text-center for mobile responsiveness) -->
+    <header class="gov-header">
+        <div class="container d-flex align-items-center justify-content-center justify-content-md-start gap-3 flex-wrap text-center text-md-start py-2">
+            <div class="emblem"><i class="bi bi-bank2"></i></div>
+            <div>
+                <p class="brand-title">Public Welfare Monitoring Framework</p>
+                <p class="brand-subtitle">Government of India | Ministry of Social Welfare (Demo Portal)</p>
+            </div>
         </div>
-        {% endfor %}
-    </div>
+    </header>
+
+    <!-- Navigation (Added flex-wrap and justify-content-center for mobile) -->
+    <nav class="gov-navbar">
+        <div class="container d-flex justify-content-center justify-content-md-end align-items-center py-2 gap-2 flex-wrap">
+            {% if session['citizen_id'] %}
+                <a href="/citizen_dashboard" class="nav-link"><i class="bi bi-speedometer2 me-1"></i>My Dashboard</a>
+                <a href="/logout" class="nav-link btn-logout"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+            {% else %}
+                <a href="/citizen_login" class="btn btn-login btn-sm rounded-pill"><i class="bi bi-person me-1"></i>Citizen Login</a>
+                <a href="/login" class="btn btn-login btn-sm rounded-pill"><i class="bi bi-shield-lock me-1"></i>Officer Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero-section">
+        <div class="container">
+            <h1><i class="bi bi-people-fill me-2"></i>Available Welfare Schemes</h1>
+            <p>Browse verified government welfare schemes below and apply securely online. Track your application status anytime through your citizen dashboard.</p>
+        </div>
+    </section>
+
+    <!-- Scheme Cards -->
+    <main class="schemes-wrapper">
+        <div class="row g-4">
+            {% for s in schemes %}
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="scheme-card">
+                    <div class="card-top"></div>
+                    <div class="card-body">
+                        <div class="scheme-icon"><i class="bi bi-file-earmark-text"></i></div>
+                        <h3>{{ s.name }}</h3>
+                        <p>{{ s.description }}</p>
+                        <a href="/citizen_login?scheme_id={{ s.id }}" class="btn btn-apply w-100">
+                            Apply Now <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mt-2">No welfare schemes are available at this time. Please check back later.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="gov-footer">
+        <div class="container">
+            <p class="mb-1">&copy; 2026 Public Welfare Monitoring Framework. All rights reserved.</p>
+            <p class="mb-0">
+                <a href="#">Terms of Use</a> &nbsp;|&nbsp;
+                <a href="#">Privacy Policy</a> &nbsp;|&nbsp;
+                <a href="#">Accessibility</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

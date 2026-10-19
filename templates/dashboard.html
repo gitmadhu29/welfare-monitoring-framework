@@ -2,197 +2,460 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Officer Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Officer Dashboard | Public Welfare Monitoring Framework</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; }
-        nav { display: flex; justify-content: space-between; align-items: center; background: #333; color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; }
-        nav a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #007bff; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        .btn-approve { display: inline-block; background-color: #28a745; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px; font-size: 12px; }
-        .btn-reject { display: inline-block; background-color: #dc3545; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-size: 12px; }
-        .btn-view { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px; font-size: 12px; }
-        .status-Pending { color: orange; font-weight: bold; }
-        .status-Approved { color: green; font-weight: bold; }
-        .status-Rejected { color: red; font-weight: bold; }
-        .status-Flagged { color: darkred; font-weight: bold; }
+        :root {
+            --gov-navy: #0b3d66;
+            --gov-navy-dark: #072a47;
+            --gov-saffron: #ff9933;
+            --gov-green: #138808;
+            --gov-red: #c0392b;
+            --gov-bg: #f5f7fa;
+        }
+
+        body {
+            font-family: 'Noto Sans', 'Poppins', Arial, sans-serif;
+            background: var(--gov-bg);
+            margin: 0;
+            color: #1f2937;
+        }
+
+        h1, h2, h3, .brand-title {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .tricolor-strip {
+            height: 5px;
+            background: linear-gradient(to right, var(--gov-saffron) 33%, #ffffff 33%, #ffffff 66%, var(--gov-green) 66%);
+        }
+
+        .gov-header {
+            background: var(--gov-navy);
+            color: #fff;
+            padding: 14px 0;
+        }
+
+        .gov-header .emblem {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gov-navy);
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .gov-header .brand-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .gov-header .brand-subtitle {
+            font-size: 0.78rem;
+            color: #cfe0ee;
+            margin: 0;
+        }
+
+        .page-toolbar {
+            background: var(--gov-navy-dark);
+            padding: 14px 0;
+        }
+
+        .page-toolbar h2 {
+            color: #fff;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-toolbar h2 i {
+            color: var(--gov-saffron);
+        }
+
+        .page-toolbar .btn-toolbar-link {
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 30px auto 60px;
+            padding: 0 20px;
+        }
+
+        /* Search bar */
+        .search-card {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e3e8ee;
+            box-shadow: 0 4px 14px rgba(11, 61, 102, 0.06);
+            padding: 18px 20px;
+            margin-bottom: 24px;
+        }
+
+        .search-card .input-group-text {
+            background: #f3f6f9;
+            border: 1px solid #d1d9e0;
+            border-right: none;
+            color: #6b7280;
+        }
+
+        .search-card .form-control {
+            border: 1px solid #d1d9e0;
+        }
+
+        .search-card .form-control:focus {
+            border-color: var(--gov-navy);
+            box-shadow: 0 0 0 0.2rem rgba(11, 61, 102, 0.15);
+        }
+
+        .btn-search {
+            background: var(--gov-navy);
+            color: #fff;
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-search:hover {
+            background: var(--gov-navy-dark);
+            color: #fff;
+        }
+
+        /* Chart card */
+        .chart-card {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e3e8ee;
+            box-shadow: 0 4px 14px rgba(11, 61, 102, 0.06);
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card h3 {
+            text-align: center;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--gov-navy-dark);
+            margin-bottom: 18px;
+        }
+
+        /* Section + tables */
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--gov-navy-dark);
+            border-left: 4px solid var(--gov-saffron);
+            padding-left: 12px;
+            margin: 28px 0 14px;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        .log-card {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e3e8ee;
+            box-shadow: 0 4px 14px rgba(11, 61, 102, 0.06);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: var(--gov-navy);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border: none;
+            padding: 12px 14px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 12px 14px;
+            font-size: 0.87rem;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f7fafc;
+        }
+
+        .status-Pending { color: #b8860b; font-weight: 600; }
+        .status-Approved { color: var(--gov-green); font-weight: 600; }
+        .status-Rejected { color: var(--gov-red); font-weight: 600; }
+        .status-Flagged { color: #8b0000; font-weight: 600; }
+
+        .action-btns .btn {
+            font-size: 0.76rem;
+            padding: 4px 10px;
+            margin-right: 4px;   
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+
+        .action-btns {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .gov-footer {
+            background: var(--gov-navy-dark);
+            color: #cfe0ee;
+            padding: 18px 20px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <nav>
-        <h2>{{ officer_department }} Department Dashboard</h2>
-        <div>
-            <a href="/export_csv" style="background: #17a2b8; margin-right: 10px;">📥 Export to CSV</a>
-            <a href="/fraud_logs" style="background: #dc3545; margin-right: 10px;">⚠️ View Fraud Logs</a>
-            <a href="/logout" style="background: #6c757d;">Logout</a>
+    <div class="tricolor-strip"></div>
+
+    <!-- Header -->
+    <header class="gov-header">
+        <div class="container d-flex align-items-center justify-content-center justify-content-md-start gap-3 flex-wrap text-center text-md-start py-2">
+            <div class="emblem"><i class="bi bi-bank2"></i></div>
+            <div>
+                <p class="brand-title">Public Welfare Monitoring Framework</p>
+                <p class="brand-subtitle">Government of India | Ministry of Social Welfare (Demo Portal)</p>
+            </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- SEARCH BAR -->
-    <div style="text-align: center; margin-bottom: 20px;">
-        <form method="GET" action="/dashboard">
-            <input type="text" name="search" placeholder="Search by App ID or Name..." value="{{ search_query }}" style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 4px;">
-            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Search</button>
-            <a href="/dashboard" style="padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Clear</a>
-        </form>
-    </div>
-
-    <!-- CHART SECTION -->
-    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px;">
-        <h3 style="text-align: center; color: #333;">Application Status Overview</h3>
-        <div style="max-width: 400px; margin: auto;">
-            <canvas id="statusChart"></canvas>
-        </div>
-    </div>
-
-    {% if scholarships %}
-    <h3>Scholarship Applications</h3>
-    <table>
-        <tr><th>App ID</th><th>Student Name</th><th>Course</th><th>Income (₹)</th><th>Status</th><th>Action</th></tr>
-        {% for app in scholarships %}
-        <tr>
-            <td>{{ app.application_id }}</td>
-            <td>{{ app.beneficiary.full_name }}</td>
-            <td>{{ app.course_degree }}</td>
-            <td>{{ app.annual_family_income }}</td>
-            <td class="status-{{ app.status }}">{{ app.status }}</td>
-            <td>
-                <a href="/application_details/{{ app.application_id }}" class="btn-view">View</a>
-                
-                <a href="#" onclick="document.getElementById('sch-{{app.id}}').submit()" class="btn-approve">Approve</a>
-                <form id="sch-{{app.id}}" action="/update_status/scholarship/{{app.id}}/Approved" method="POST" style="display:none;"></form>
-                
-                <a href="#" onclick="document.getElementById('sch-r-{{app.id}}').submit()" class="btn-reject">Reject</a>
-                <form id="sch-r-{{app.id}}" action="/update_status/scholarship/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
-
-    {% if pensions %}
-    <h3>Pension Applications</h3>
-    <table>
-        <tr><th>App ID</th><th>Senior Citizen</th><th>Employer</th><th>Status</th><th>Action</th></tr>
-        {% for app in pensions %}
-        <tr>
-            <td>{{ app.application_id }}</td>
-            <td>{{ app.beneficiary.full_name }}</td>
-            <td>{{ app.previous_employer_details }}</td>
-            <td class="status-{{ app.status }}">{{ app.status }}</td>
-            <td>
-                <a href="/application_details/{{ app.application_id }}" class="btn-view">View</a>
-                
-                <a href="#" onclick="document.getElementById('pen-{{app.id}}').submit()" class="btn-approve">Approve</a>
-                <form id="pen-{{app.id}}" action="/update_status/pension/{{app.id}}/Approved" method="POST" style="display:none;"></form>
-                
-                <a href="#" onclick="document.getElementById('pen-r-{{app.id}}').submit()" class="btn-reject">Reject</a>
-                <form id="pen-r-{{app.id}}" action="/update_status/pension/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
-
-    {% if rations %}
-    <h3>Ration Applications</h3>
-    <table>
-        <tr><th>App ID</th><th>Card Holder</th><th>Card Type</th><th>Family Members</th><th>Status</th><th>Action</th></tr>
-        {% for app in rations %}
-        <tr>
-            <td>{{ app.application_id }}</td>
-            <td>{{ app.beneficiary.full_name }}</td>
-            <td>{{ app.ration_card_type }}</td>
-            <td>{{ app.total_family_members }}</td>
-            <td class="status-{{ app.status }}">{{ app.status }}</td>
-            <td>
-                <a href="/application_details/{{ app.application_id }}" class="btn-view">View</a>
-                
-                <a href="#" onclick="document.getElementById('rat-{{app.id}}').submit()" class="btn-approve">Approve</a>
-                <form id="rat-{{app.id}}" action="/update_status/ration/{{app.id}}/Approved" method="POST" style="display:none;"></form>
-                
-                <a href="#" onclick="document.getElementById('rat-r-{{app.id}}').submit()" class="btn-reject">Reject</a>
-                <form id="rat-r-{{app.id}}" action="/update_status/ration/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
-
-    {% if subsidies %}
-    <h3>Subsidy Applications</h3>
-    <table>
-        <tr><th>App ID</th><th>Consumer</th><th>Subsidy Type</th><th>Income (₹)</th><th>Status</th><th>Action</th></tr>
-        {% for app in subsidies %}
-        <tr>
-            <td>{{ app.application_id }}</td>
-            <td>{{ app.beneficiary.full_name }}</td>
-            <td>{{ app.subsidy_type }}</td>
-            <td>{{ app.annual_income }}</td>
-            <td class="status-{{ app.status }}">{{ app.status }}</td>
-            <td>
-                <a href="/application_details/{{ app.application_id }}" class="btn-view">View</a>
-                
-                <a href="#" onclick="document.getElementById('sub-{{app.id}}').submit()" class="btn-approve">Approve</a>
-                <form id="sub-{{app.id}}" action="/update_status/subsidy/{{app.id}}/Approved" method="POST" style="display:none;"></form>
-                
-                <a href="#" onclick="document.getElementById('sub-r-{{app.id}}').submit()" class="btn-reject">Reject</a>
-                <form id="sub-r-{{app.id}}" action="/update_status/subsidy/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
-
+    <!-- Page toolbar -->
+    <div class="page-toolbar">
+        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h2><i class="bi bi-clipboard-data-fill"></i>{{ officer_department }} Department Dashboard</h2>
+            <<div class="d-flex flex-wrap gap-2">
+    <a href="/fund_dashboard" class="btn btn-success btn-sm"><i class="bi bi-cash-stack me-1"></i>Fund Dashboard</a>
+    <a href="/export_csv" class="btn btn-info btn-sm text-white"><i class="bi bi-download me-1"></i>Export CSV</a>
+    <a href="/fraud_logs" class="btn btn-danger btn-sm"><i class="bi bi-exclamation-triangle me-1"></i>Fraud Logs</a>
+    <a href="/logout" class="btn btn-secondary btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
 </div>
+        </div>
+    </div>
 
-<!-- HIDDEN DATA FOR CHART (Flask fills this in) -->
-<span id="data-pending" style="display:none;">{{ stats.pending if stats else 0 }}</span>
-<span id="data-approved" style="display:none;">{{ stats.approved if stats else 0 }}</span>
-<span id="data-rejected" style="display:none;">{{ stats.rejected if stats else 0 }}</span>
-<span id="data-flagged" style="display:none;">{{ stats.flagged if stats else 0 }}</span>
+    <div class="content-wrapper">
 
-<!-- SCRIPT FOR CHART.JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Read the numbers from the hidden HTML elements
-    const chartData = [
-        parseInt(document.getElementById('data-pending').innerText),
-        parseInt(document.getElementById('data-approved').innerText),
-        parseInt(document.getElementById('data-rejected').innerText),
-        parseInt(document.getElementById('data-flagged').innerText)
-    ];
+        <!-- SEARCH BAR -->
+        <div class="search-card">
+            <form method="GET" action="/dashboard" class="row g-2 justify-content-center align-items-center">
+                <div class="col-12 col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Search by App ID or Name..." value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-search"><i class="bi bi-search me-1"></i>Search</button>
+                </div>
+                <div class="col-auto">
+                    <a href="/dashboard" class="btn btn-outline-secondary"><i class="bi bi-x-circle me-1"></i>Clear</a>
+                </div>
+            </form>
+        </div>
 
-    const ctx = document.getElementById('statusChart').getContext('2d');
-    const statusChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Pending', 'Approved', 'Rejected', 'Flagged'],
-            datasets: [{
-                label: 'Applications',
-                data: chartData,
-                backgroundColor: [
-                    'rgba(255, 193, 7, 0.8)',
-                    'rgba(40, 167, 69, 0.8)',
-                    'rgba(220, 53, 69, 0.8)',
-                    'rgba(139, 0, 0, 0.8)'
-                ],
-                borderColor: 'white',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
+        <!-- CHART SECTION -->
+        <div class="chart-card">
+            <h3><i class="bi bi-pie-chart-fill me-1" style="color: var(--gov-saffron);"></i>Application Status Overview</h3>
+            <div style="max-width: 400px; margin: auto;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        {% if scholarships %}
+        <div class="section-title">Scholarship Applications</div>
+        <div class="log-card">
+            <div class="table-responsive">
+                <table class="table">
+                    <tr><th>App ID</th><th>Student Name</th><th>Course</th><th>Income (₹)</th><th>Status</th><th>Action</th></tr>
+                    {% for app in scholarships %}
+                    <tr>
+                        <td>{{ app.application_id }}</td>
+                        <td>{{ app.beneficiary.full_name }}</td>
+                        <td>{{ app.course_degree }}</td>
+                        <td>{{ app.annual_family_income }}</td>
+                        <td class="status-{{ app.status }}">{{ app.status }}</td>
+                        <td class="action-btns">
+                            <a href="/application_details/{{ app.application_id }}" class="btn btn-secondary">View</a>
+
+                            <a href="#" class="btn btn-success {% if app.status == 'Approved' %}disabled{% endif %}" {% if app.status != 'Approved' %}onclick="document.getElementById('sch-{{app.id}}').submit()"{% endif %}>Approve</a>
+                            <form id="sch-{{app.id}}" action="/update_status/scholarship/{{app.id}}/Approved" method="POST" style="display:none;"></form>
+
+                            <a href="#" class="btn btn-danger {% if app.status == 'Rejected' %}disabled{% endif %}" {% if app.status != 'Rejected' %}onclick="document.getElementById('sch-r-{{app.id}}').submit()"{% endif %}>Reject</a>
+                            <form id="sch-r-{{app.id}}" action="/update_status/scholarship/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if pensions %}
+        <div class="section-title">Pension Applications</div>
+        <div class="log-card">
+            <div class="table-responsive">
+                <table class="table">
+                    <tr><th>App ID</th><th>Senior Citizen</th><th>Employer</th><th>Status</th><th>Action</th></tr>
+                    {% for app in pensions %}
+                    <tr>
+                        <td>{{ app.application_id }}</td>
+                        <td>{{ app.beneficiary.full_name }}</td>
+                        <td>{{ app.previous_employer_details }}</td>
+                        <td class="status-{{ app.status }}">{{ app.status }}</td>
+                        <td class="action-btns">
+                            <a href="/application_details/{{ app.application_id }}" class="btn btn-secondary">View</a>
+
+                            <a href="#" class="btn btn-success {% if app.status == 'Approved' %}disabled{% endif %}" {% if app.status != 'Approved' %}onclick="document.getElementById('pen-{{app.id}}').submit()"{% endif %}>Approve</a>
+                            <form id="pen-{{app.id}}" action="/update_status/pension/{{app.id}}/Approved" method="POST" style="display:none;"></form>
+
+                            <a href="#" class="btn btn-danger {% if app.status == 'Rejected' %}disabled{% endif %}" {% if app.status != 'Rejected' %}onclick="document.getElementById('pen-r-{{app.id}}').submit()"{% endif %}>Reject</a>
+                            <form id="pen-r-{{app.id}}" action="/update_status/pension/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if rations %}
+        <div class="section-title">Ration Applications</div>
+        <div class="log-card">
+            <div class="table-responsive">
+                <table class="table">
+                    <tr><th>App ID</th><th>Card Holder</th><th>Card Type</th><th>Family Members</th><th>Status</th><th>Action</th></tr>
+                    {% for app in rations %}
+                    <tr>
+                        <td>{{ app.application_id }}</td>
+                        <td>{{ app.beneficiary.full_name }}</td>
+                        <td>{{ app.ration_card_type }}</td>
+                        <td>{{ app.total_family_members }}</td>
+                        <td class="status-{{ app.status }}">{{ app.status }}</td>
+                        <td class="action-btns">
+                            <a href="/application_details/{{ app.application_id }}" class="btn btn-secondary">View</a>
+
+                            <a href="#" class="btn btn-success {% if app.status == 'Approved' %}disabled{% endif %}" {% if app.status != 'Approved' %}onclick="document.getElementById('rat-{{app.id}}').submit()"{% endif %}>Approve</a>
+                            <form id="rat-{{app.id}}" action="/update_status/ration/{{app.id}}/Approved" method="POST" style="display:none;"></form>
+
+                            <a href="#" class="btn btn-danger {% if app.status == 'Rejected' %}disabled{% endif %}" {% if app.status != 'Rejected' %}onclick="document.getElementById('rat-r-{{app.id}}').submit()"{% endif %}>Reject</a>
+                            <form id="rat-r-{{app.id}}" action="/update_status/ration/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if subsidies %}
+        <div class="section-title">Subsidy Applications</div>
+        <div class="log-card">
+            <div class="table-responsive">
+                <table class="table">
+                    <tr><th>App ID</th><th>Consumer</th><th>Subsidy Type</th><th>Income (₹)</th><th>Status</th><th>Action</th></tr>
+                    {% for app in subsidies %}
+                    <tr>
+                        <td>{{ app.application_id }}</td>
+                        <td>{{ app.beneficiary.full_name }}</td>
+                        <td>{{ app.subsidy_type }}</td>
+                        <td>{{ app.annual_income }}</td>
+                        <td class="status-{{ app.status }}">{{ app.status }}</td>
+                        <td class="action-btns">
+                            <a href="/application_details/{{ app.application_id }}" class="btn btn-secondary">View</a>
+
+                            <a href="#" class="btn btn-success {% if app.status == 'Approved' %}disabled{% endif %}" {% if app.status != 'Approved' %}onclick="document.getElementById('sub-{{app.id}}').submit()"{% endif %}>Approve</a>
+                            <form id="sub-{{app.id}}" action="/update_status/subsidy/{{app.id}}/Approved" method="POST" style="display:none;"></form>
+
+                            <a href="#" class="btn btn-danger {% if app.status == 'Rejected' %}disabled{% endif %}" {% if app.status != 'Rejected' %}onclick="document.getElementById('sub-r-{{app.id}}').submit()"{% endif %}>Reject</a>
+                            <form id="sub-r-{{app.id}}" action="/update_status/subsidy/{{app.id}}/Rejected" method="POST" style="display:none;"></form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="gov-footer">
+        <p class="mb-0">&copy; 2026 Public Welfare Monitoring Framework. All rights reserved.</p>
+    </footer>
+
+    <!-- HIDDEN DATA FOR CHART (Flask fills this in) -->
+    <span id="data-pending" style="display:none;">{{ stats.pending if stats else 0 }}</span>
+    <span id="data-approved" style="display:none;">{{ stats.approved if stats else 0 }}</span>
+    <span id="data-rejected" style="display:none;">{{ stats.rejected if stats else 0 }}</span>
+    <span id="data-flagged" style="display:none;">{{ stats.flagged if stats else 0 }}</span>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SCRIPT FOR CHART.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Read the numbers from the hidden HTML elements
+        const chartData = [
+            parseInt(document.getElementById('data-pending').innerText),
+            parseInt(document.getElementById('data-approved').innerText),
+            parseInt(document.getElementById('data-rejected').innerText),
+            parseInt(document.getElementById('data-flagged').innerText)
+        ];
+
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        const statusChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Approved', 'Rejected', 'Flagged'],
+                datasets: [{
+                    label: 'Applications',
+                    data: chartData,
+                    backgroundColor: [
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(19, 136, 8, 0.8)',
+                        'rgba(192, 57, 43, 0.8)',
+                        'rgba(139, 0, 0, 0.8)'
+                    ],
+                    borderColor: 'white',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
                 }
             }
-        }
-    });
-</script>
+        });
+    </script>
+</body>
+</html>

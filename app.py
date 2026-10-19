@@ -11,7 +11,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import (db, Beneficiary, Scheme, ScholarshipApplication, 
                     PensionApplication, RationApplication, SubsidyApplication, 
-                    Officer, FraudLog)
+                    Officer, FraudLog , SchemeFund)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///welfare.db'
@@ -382,6 +382,81 @@ def dashboard():
                            stats=stats,
                            search_query=search_query) # Pass search back to keep input filled
 
+# ---------------- FUND DASHBOARD (ALL OFFICERS - DEPARTMENT FILTERED) ----------------
+@app.route('/fund_dashboard')
+def fund_dashboard():
+    if 'officer_id' not in session:
+        return redirect(url_for('login'))
+    
+    department = session.get('department')
+    role = session.get('role')
+    
+    # Get all funds
+    all_funds = SchemeFund.query.all()
+    
+    # Filter funds based on department (RBAC)
+    if role == 'Admin' or department == 'All':
+        funds = all_funds  # Admin sees all
+    elif department == 'Education':
+        funds = [f for f in all_funds if f.scheme.category == 'Student']
+    elif department == 'Pension':
+        funds = [f for f in all_funds if f.scheme.category == 'Senior Citizen']
+    elif department == 'Food & PDS':
+        funds = [f for f in all_funds if f.scheme.category == 'BPL']
+    elif department == 'Subsidy':
+        funds = [f for f in all_funds if f.scheme.category == 'General']
+    else:
+        funds = []
+    
+    fund_stats = []
+    
+    for fund in funds:
+        approved_count = 0
+        pending_count = 0
+        
+        if "Scholarship" in fund.scheme.name:
+            approved_count = ScholarshipApplication.query.filter_by(scheme_id=fund.scheme_id, status='Approved').count()
+            pending_count = ScholarshipApplication.query.filter_by(scheme_id=fund.scheme_id, status='Pending').count()
+        elif "Pension" in fund.scheme.name:
+            approved_count = PensionApplication.query.filter_by(scheme_id=fund.scheme_id, status='Approved').count()
+            pending_count = PensionApplication.query.filter_by(scheme_id=fund.scheme_id, status='Pending').count()
+        elif "Food Security" in fund.scheme.name:
+            approved_count = RationApplication.query.filter_by(scheme_id=fund.scheme_id, status='Approved').count()
+            pending_count = RationApplication.query.filter_by(scheme_id=fund.scheme_id, status='Pending').count()
+        else:
+            approved_count = SubsidyApplication.query.filter_by(scheme_id=fund.scheme_id, status='Approved').count()
+            pending_count = SubsidyApplication.query.filter_by(scheme_id=fund.scheme_id, status='Pending').count()
+        
+        allocated = approved_count * fund.per_beneficiary_amount
+        pending = pending_count * fund.per_beneficiary_amount
+        remaining = fund.total_budget - allocated
+        
+        fund_stats.append({
+            'scheme_name': fund.scheme.name,
+            'category': fund.scheme.category,
+            'total_budget': fund.total_budget,
+            'allocated': allocated,
+            'pending': pending,
+            'remaining': remaining,
+            'approved_count': approved_count,
+            'pending_count': pending_count,
+            'per_person': fund.per_beneficiary_amount,
+            'utilization_pct': round((allocated / fund.total_budget) * 100, 1) if fund.total_budget > 0 else 0
+        })
+    
+    total_budget = sum(f['total_budget'] for f in fund_stats)
+    total_allocated = sum(f['allocated'] for f in fund_stats)
+    total_pending = sum(f['pending'] for f in fund_stats)
+    total_remaining = total_budget - total_allocated
+    
+    return render_template('fund_dashboard.html', 
+                           fund_stats=fund_stats,
+                           total_budget="{:,.0f}".format(total_budget),
+                           total_allocated="{:,.0f}".format(total_allocated),
+                           total_pending="{:,.0f}".format(total_pending),
+                           total_remaining="{:,.0f}".format(total_remaining),
+                           officer_department=department)
+
 # ---------------- EXPORT TO CSV ----------------
 @app.route('/export_csv')
 def export_csv():
@@ -520,6 +595,13 @@ def update_status(app_type, app_id, status):
     if app_obj:
         app_obj.status = status
         app_obj.processed_at = datetime.utcnow()
+        
+        # NEW: Save rejection reason if rejected, clear it if approved
+        if status == "Rejected":
+            app_obj.rejection_reason = request.form.get('rejection_reason', '').strip()
+        else:
+            app_obj.rejection_reason = None
+            
         db.session.commit()
         flash(f'Application {app_obj.application_id} has been {status}.')
         
